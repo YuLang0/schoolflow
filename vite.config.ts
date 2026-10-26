@@ -22,6 +22,6 @@ export default defineConfig({
   plugins: [react(), neisDevProxy()],
   test: {
     environment: 'jsdom',
-    include: ['src/**/*.test.ts', 'netlify/**/*.test.mjs'],
+    include: ['src/**/*.test.ts', 'tests/**/*.test.mjs'],
   },
 } as never);

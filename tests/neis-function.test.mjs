@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import handler from './neis.mjs';
+import handler from '../netlify/functions/neis.mjs';
 
 afterEach(() => vi.unstubAllGlobals());
 
