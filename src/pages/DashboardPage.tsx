@@ -2,6 +2,7 @@ import type { Focus } from '../components/Shell';
 import { MealCard } from '../components/MealCard';
 import { Empty } from '../components/ui';
 import { useMeals } from '../hooks/useMeals';
+import { useSchool } from '../hooks/useSchool';
 import type { DataApi } from '../hooks/useAppData';
 import { ddayLabel, diffDays, formatKoreanDate, toDateStr } from '../lib/date';
 import { classStatus, todayClasses } from '../lib/schedule';
@@ -45,7 +46,8 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
   const doneCount = data.assignments.filter((a) => a.done).length;
-  const meals = useMeals(data.settings.school, today, today);
+  const { school } = useSchool();
+  const meals = useMeals(school, today, today);
   const lunch = meals.meals?.find((m) => m.type === '중식') ?? meals.meals?.[0];
 
   return (
@@ -153,7 +155,7 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
           )}
         </section>
 
-        {data.settings.school && (
+        {school && (
           <section className="card">
             <div className="card-head">
               <h3>오늘 급식</h3>

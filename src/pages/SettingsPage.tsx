@@ -8,9 +8,10 @@ import { makeBackup, parseBackup } from '../lib/backup';
 import { toCSV } from '../lib/csv';
 import { toDateStr } from '../lib/date';
 import { downloadText } from '../lib/download';
-import { ALLERGENS, searchSchools, type NeisSchool } from '../lib/neis';
+import { FIXED_SCHOOL_NAME } from '../hooks/useSchool';
+import { ALLERGENS } from '../lib/neis';
 import { newPasswordProblem } from '../lib/password';
-import { DAY_NAMES, LUNCH_TIME, type AppData, type AppUser, type SchoolRef, type Settings } from '../lib/types';
+import { DAY_NAMES, LUNCH_TIME, type AppData, type AppUser, type Settings } from '../lib/types';
 
 type Theme = 'system' | 'light' | 'dark';
 type Msg = { kind: 'error' | 'success' | 'info'; text: string } | null;
@@ -85,7 +86,6 @@ export function SettingsPage({
 
 function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser; onUserChange: (u: AppUser) => void; settings: Settings; save: (p: Partial<Settings>) => void }) {
   const [name, setName] = useState(user.name);
-  const [school, setSchool] = useState<SchoolRef | null>(settings.school);
   const [gradeNo, setGradeNo] = useState(settings.gradeNo);
   const [classNo, setClassNo] = useState(settings.classNo);
   const [msg, setMsg] = useState<Msg>(null);
@@ -96,7 +96,7 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
         await updateName(user, name);
         onUserChange({ ...user, name: name.trim() });
       }
-      save({ school, schoolName: school?.name ?? settings.schoolName, gradeNo, classNo: classNo.trim() });
+      save({ schoolName: FIXED_SCHOOL_NAME, gradeNo, classNo: classNo.trim() });
       setMsg({ kind: 'success', text: '저장했습니다.' });
     } catch (err) {
       setMsg({ kind: 'error', text: authErrorMessage(err) });
@@ -107,13 +107,12 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
       <h3>내 정보</h3>
       <p className="muted small">{user.email}</p>
       <Field label="이름(별명)">{(id) => <input id={id} value={name} onChange={(e) => setName(e.target.value)} maxLength={30} />}</Field>
-      <SchoolPicker
-        value={school}
-        onChange={(sc) => {
-          setSchool(sc);
-          save({ school: sc, schoolName: sc?.name ?? '' }); // 학교는 고르는 즉시 저장
-        }}
-      />
+      <div className="field">
+        <label>학교</label>
+        <div className="school-chosen">
+          <strong>{FIXED_SCHOOL_NAME}</strong>
+        </div>
+      </div>
       <div className="row2">
         <Field label="학년">
           {(id) => (
@@ -133,83 +132,8 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
       </div>
       {msg && <Banner kind={msg.kind}>{msg.text}</Banner>}
       <button className="btn primary">저장</button>
-      <p className="hint">학교·학년·반을 정하면 나이스에서 시간표와 급식을 가져올 수 있습니다.</p>
+      <p className="hint">학년·반을 정하면 나이스에서 우리 반 시간표를 가져올 수 있습니다.</p>
     </form>
-  );
-}
-
-/** 나이스 학교 검색 */
-function SchoolPicker({ value, onChange }: { value: SchoolRef | null; onChange: (s: SchoolRef | null) => void }) {
-  const [q, setQ] = useState('');
-  const [list, setList] = useState<NeisSchool[] | null>(null);
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const find = async () => {
-    setBusy(true);
-    setError(null);
-    try {
-      const r = await searchSchools(q);
-      setList(r);
-      if (r.length === 0) setError(`"${q.trim()}" 학교를 찾지 못했습니다. 정식 이름 일부로 검색해 보세요. (예: 서울고)`);
-    } catch (e) {
-      setList(null);
-      setError((e as Error).message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
-  if (value)
-    return (
-      <div className="field">
-        <label>학교</label>
-        <div className="school-chosen">
-          <strong>{value.name}</strong>
-          <button type="button" className="btn ghost small" onClick={() => onChange(null)}>
-            다시 고르기
-          </button>
-        </div>
-      </div>
-    );
-
-  return (
-    <div className="field">
-      <label htmlFor="school-q">학교 검색</label>
-      <div className="search-row">
-        <input
-          id="school-q"
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter') {
-              e.preventDefault();
-              void find();
-            }
-          }}
-          placeholder="학교 이름 (예: 한국고)"
-          maxLength={30}
-        />
-        <button type="button" className="btn ghost" onClick={() => void find()} disabled={busy || q.trim().length < 2}>
-          {busy ? '검색 중…' : '검색'}
-        </button>
-      </div>
-      {error && <p className="warn">{error}</p>}
-      {list && list.length > 0 && (
-        <ul className="list school-list">
-          {list.slice(0, 30).map((s) => (
-            <li key={s.officeCode + s.schoolCode}>
-              <button type="button" className="grow link-plain" onClick={() => onChange({ officeCode: s.officeCode, schoolCode: s.schoolCode, name: s.name })}>
-                <strong>{s.name}</strong> <span className="badge">{s.kind}</span>
-                <small className="muted block">
-                  {s.officeName} · {s.address}
-                </small>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
   );
 }
 

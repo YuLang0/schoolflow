@@ -3,27 +3,24 @@ import { MealCard } from '../components/MealCard';
 import type { Focus } from '../components/Shell';
 import { Banner, Empty } from '../components/ui';
 import { useMeals } from '../hooks/useMeals';
+import { useSchool } from '../hooks/useSchool';
 import { addDays, formatKoreanDate, toDateStr } from '../lib/date';
 import { ALLERGENS, isNeisLimited, schoolWeek } from '../lib/neis';
 import type { AppData } from '../lib/types';
 
-export function MealsPage({ data, go }: { data: AppData; go: (f: Focus) => void }) {
+export function MealsPage({ data }: { data: AppData; go?: (f: Focus) => void }) {
   const today = toDateStr(new Date());
   const [from, setFrom] = useState(() => schoolWeek(new Date()).from);
   const [showNumbers, setShowNumbers] = useState(false);
   const to = addDays(from, 4);
-  const { school, allergies } = data.settings;
+  const { allergies } = data.settings;
+  const { school, error: schoolError } = useSchool();
   const { meals, loading, error, refresh } = useMeals(school, from, to);
 
   if (!school)
     return (
       <div className="card">
-        <Empty>
-          급식표를 보려면 먼저 학교를 정해 주세요.{' '}
-          <button className="link" onClick={() => go({ view: 'settings' })}>
-            설정으로 가기
-          </button>
-        </Empty>
+        <Empty>{schoolError ?? '학교 정보를 불러오는 중…'}</Empty>
       </div>
     );
 

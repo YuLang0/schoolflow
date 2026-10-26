@@ -1,6 +1,7 @@
 import { Fragment, useState, type FormEvent } from 'react';
 import { Banner, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
+import { useSchool } from '../hooks/useSchool';
 import { formatKoreanDate, weekdayIndex } from '../lib/date';
 import { fetchTimetable, isNeisLimited, schoolWeek } from '../lib/neis';
 import { mergeNeisTimetable } from '../lib/neisImport';
@@ -16,7 +17,8 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
 
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
-  const { school, gradeNo, classNo } = data.settings;
+  const { gradeNo, classNo } = data.settings;
+  const { school } = useSchool();
   const ready = !!(school && gradeNo && classNo);
 
   const importNeis = async () => {
@@ -55,11 +57,11 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
     <div className="stack">
       <div className="toolbar">
         <p className="muted grow">칸을 눌러 과목을 입력하거나 고칠 수 있습니다.</p>
-        <button className="btn ghost" onClick={() => void importNeis()} disabled={busy || !ready} title={ready ? '' : '설정에서 학교·학년·반을 먼저 정해 주세요'}>
+        <button className="btn ghost" onClick={() => void importNeis()} disabled={busy || !ready} title={ready ? '' : '설정에서 학년·반을 먼저 정해 주세요'}>
           {busy ? '가져오는 중…' : '나이스에서 가져오기'}
         </button>
       </div>
-      {!ready && <p className="hint">나이스 시간표를 가져오려면 설정 → 내 정보에서 학교·학년·반을 정해 주세요.</p>}
+      {!ready && <p className="hint">나이스 시간표를 가져오려면 설정 → 내 정보에서 학년·반을 정해 주세요.</p>}
       {msg && (
         <Banner kind={msg.kind} onClose={() => setMsg(null)}>
           {msg.text}
