@@ -1,5 +1,5 @@
 import type { TimetableRow } from './neis';
-import { newId, type PeriodTime, type TimetableEntry } from './types';
+import { newId, type TimetableEntry } from './types';
 
 /**
  * 나이스에서 받은 한 주 시간표를 앱 시간표로 합칩니다.
@@ -21,20 +21,4 @@ export function mergeNeisTimetable(existing: TimetableEntry[], rows: TimetableRo
     imported.push({ id: same ? prev.id : newId(), day: r.day, period: r.period, subject: r.subject.slice(0, 30), room: same ? prev.room : '', teacher: same ? prev.teacher : '' });
   }
   return { timetable: [...kept, ...imported], days, maxPeriod: Math.max(0, ...rows.map((r) => r.period)) };
-}
-
-/** 나이스 시간표가 설정된 교시 수보다 많으면 교시 시간을 이어 붙입니다 (50분 수업, 10분 쉬는 시간) */
-export function extendPeriods(times: PeriodTime[], count: number): PeriodTime[] {
-  const out = times.map((t) => ({ ...t }));
-  const add = (hhmm: string, min: number) => {
-    const [h, m] = hhmm.split(':').map(Number);
-    const t = Math.min(h * 60 + m + min, 23 * 60 + 59);
-    return `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
-  };
-  while (out.length < count) {
-    const last = out.at(-1)?.end ?? '08:30';
-    const start = add(last, 10);
-    out.push({ start, end: add(start, 50) });
-  }
-  return out;
 }

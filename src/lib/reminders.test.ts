@@ -16,7 +16,7 @@ function data(): AppData {
   return d;
 }
 
-const now = new Date(2026, 9, 26, 9, 36); // 월요일, 2교시(09:40) 4분 전
+const now = new Date(2026, 9, 26, 10, 6); // 월요일, 2교시(10:10) 4분 전
 
 describe('dueReminders', () => {
   it('알림이 꺼져 있으면 없음', () => {
@@ -37,6 +37,6 @@ describe('dueReminders', () => {
     d.settings.classReminder = true;
     const r = dueReminders(d, now, new Set());
     expect(r.at(-1)).toMatchObject({ key: 'c:2026-10-26:2', title: '2교시 영어 4분 전' });
-    expect(dueReminders(d, new Date(2026, 9, 26, 9, 30), new Set()).some((x) => x.key.startsWith('c:'))).toBe(false);
+    expect(dueReminders(d, new Date(2026, 9, 26, 10, 0), new Set()).some((x) => x.key.startsWith('c:'))).toBe(false);
   });
 });

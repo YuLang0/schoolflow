@@ -93,9 +93,6 @@ export function parseBackup(text: string): AppData {
 
   const base = defaultSettings();
   const s = (d.settings && typeof d.settings === 'object' ? d.settings : {}) as Record<string, unknown>;
-  const periodTimes = arr(s.periodTimes)
-    .map((p) => ({ start: time(p.start), end: time(p.end) }))
-    .filter((p) => p.start && p.end);
   const settings = {
     ...base,
     schoolName: str(s.schoolName, 100),
@@ -105,7 +102,7 @@ export function parseBackup(text: string): AppData {
     allergies: Array.isArray(s.allergies)
       ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)
       : [],
-    periodTimes: periodTimes.length ? periodTimes.slice(0, 12) : base.periodTimes,
+    periodTimes: base.periodTimes, // 학교 고정 교시 시간
     notifications: s.notifications === true,
     remindDays: typeof s.remindDays === 'number' ? Math.min(7, Math.max(0, Math.round(s.remindDays))) : base.remindDays,
     classReminder: s.classReminder === true,

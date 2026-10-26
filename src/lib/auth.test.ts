@@ -102,3 +102,12 @@ describe('LocalStore', () => {
     expect((await a.load()).events).toEqual([]);
   });
 });
+
+describe('교시 시간 고정', () => {
+  beforeEach(() => localStorage.clear());
+  it('예전에 저장한 교시 시간이 있어도 학교 고정값으로 불러옴', async () => {
+    localStorage.setItem('sf:data:old@x', JSON.stringify({ settings: { periodTimes: [{ start: '08:40', end: '09:30' }] } }));
+    const s = (await new LocalStore('old@x').load()).settings;
+    expect(s.periodTimes.map((p) => p.start)).toEqual(['09:10', '10:10', '11:10', '12:10', '13:50', '14:50', '15:50']);
+  });
+});

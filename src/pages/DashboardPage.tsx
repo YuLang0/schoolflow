@@ -19,6 +19,8 @@ function statusText(data: AppData, now: Date): string {
       return `지금 ${s.period}교시${subj(s.period) ? ` ${subj(s.period)}` : ''} 수업 중 · ${s.endsIn}분 남음`;
     case 'break':
       return `쉬는 시간 · ${s.startsIn}분 후 ${s.next}교시${subj(s.next) ? ` ${subj(s.next)}` : ''}`;
+    case 'lunch':
+      return `점심시간 🍚 · ${s.startsIn}분 후 ${s.next}교시${subj(s.next) ? ` ${subj(s.next)}` : ''}`;
     case 'after':
       return '오늘 수업이 모두 끝났습니다. 수고했어요!';
   }

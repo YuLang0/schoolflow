@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { neisRows, parseDishes, schoolWeek, toMeal, toTimetableRows } from './neis';
-import { extendPeriods, mergeNeisTimetable } from './neisImport';
+import { mergeNeisTimetable } from './neisImport';
 
 const ok = (endpoint: string, row: unknown[]) => ({
   [endpoint]: [{ head: [{ list_total_count: row.length }, { RESULT: { CODE: 'INFO-000', MESSAGE: '정상 처리되었습니다.' } }] }, { row }],
@@ -72,13 +72,6 @@ describe('시간표', () => {
     expect(r.timetable.find((e) => e.day === 0 && e.period === 1)).toMatchObject({ id: 'a', room: '수학실' });
     expect(r.timetable.some((e) => e.id === 'b')).toBe(false); // 월요일은 나이스 내용으로 교체
     expect(r.timetable.find((e) => e.id === 'c')).toBeTruthy(); // 목요일은 유지
-  });
-  it('교시 늘리기', () => {
-    expect(extendPeriods([{ start: '15:30', end: '16:20' }], 3)).toEqual([
-      { start: '15:30', end: '16:20' },
-      { start: '16:30', end: '17:20' },
-      { start: '17:30', end: '18:20' },
-    ]);
   });
   it('이번 주 (주말이면 다음 주)', () => {
     expect(schoolWeek(new Date(2026, 9, 28))).toEqual({ from: '2026-10-26', to: '2026-10-30' });

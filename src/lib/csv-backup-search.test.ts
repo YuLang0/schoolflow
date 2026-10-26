@@ -27,6 +27,11 @@ describe('backup', () => {
     expect(() => parseBackup('{"app":"other","data":{}}')).toThrow('SchoolFlow 백업 파일이 아닙니다.');
     expect(() => parseBackup('{"app":"schoolflow","version":99,"data":{}}')).toThrow('지원하지 않는 백업 버전');
   });
+  it('예전 백업의 교시 시간은 무시하고 학교 고정값 사용', () => {
+    const d = parseBackup(JSON.stringify({ app: 'schoolflow', version: 1, data: { settings: { periodTimes: [{ start: '08:00', end: '08:50' }] } } }));
+    expect(d.settings.periodTimes[0]).toEqual({ start: '09:10', end: '10:00' });
+    expect(d.settings.periodTimes).toHaveLength(7);
+  });
   it('형식이 틀린 항목은 버리고 값 범위를 맞춤', () => {
     const d = parseBackup(
       JSON.stringify({

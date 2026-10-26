@@ -90,15 +90,18 @@ export interface AppUser {
   name: string;
 }
 
+/** 우리 학교 교시 시간 (고정). 4교시와 5교시 사이 13:00~13:50은 점심시간 */
 export const DEFAULT_PERIOD_TIMES: PeriodTime[] = [
-  { start: '08:40', end: '09:30' },
-  { start: '09:40', end: '10:30' },
-  { start: '10:40', end: '11:30' },
-  { start: '11:40', end: '12:30' },
-  { start: '13:30', end: '14:20' },
-  { start: '14:30', end: '15:20' },
-  { start: '15:30', end: '16:20' },
+  { start: '09:10', end: '10:00' },
+  { start: '10:10', end: '11:00' },
+  { start: '11:10', end: '12:00' },
+  { start: '12:10', end: '13:00' },
+  { start: '13:50', end: '14:40' },
+  { start: '14:50', end: '15:40' },
+  { start: '15:50', end: '16:40' },
 ];
+export const LUNCH_TIME: PeriodTime = { start: '13:00', end: '13:50' };
+export const PERIOD_COUNT = DEFAULT_PERIOD_TIMES.length;
 
 export function defaultSettings(): Settings {
   return {

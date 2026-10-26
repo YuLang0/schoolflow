@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Banner, Field, PasswordInput } from '../components/ui';
 import { showNotification } from '../hooks/useReminders';
 import type { DataApi } from '../hooks/useAppData';
@@ -10,7 +10,7 @@ import { toDateStr } from '../lib/date';
 import { downloadText } from '../lib/download';
 import { ALLERGENS, searchSchools, type NeisSchool } from '../lib/neis';
 import { newPasswordProblem } from '../lib/password';
-import { DAY_NAMES, type AppData, type AppUser, type SchoolRef, type Settings } from '../lib/types';
+import { DAY_NAMES, LUNCH_TIME, type AppData, type AppUser, type SchoolRef, type Settings } from '../lib/types';
 
 type Theme = 'system' | 'light' | 'dark';
 type Msg = { kind: 'error' | 'success' | 'info'; text: string } | null;
@@ -58,7 +58,7 @@ export function SettingsPage({
         </div>
       </section>
 
-      <PeriodSection settings={s} save={save} timetableCount={data.timetable.length} />
+      <PeriodSection settings={s} />
       <AllergySection settings={s} save={save} />
       <NotifySection settings={s} save={save} />
       <DataSection data={data} api={api} />
@@ -284,52 +284,32 @@ function PasswordSection({ user }: { user: AppUser }) {
   );
 }
 
-function PeriodSection({ settings, save, timetableCount }: { settings: Settings; save: (p: Partial<Settings>) => void; timetableCount: number }) {
-  const [times, setTimes] = useState(settings.periodTimes);
-  const [msg, setMsg] = useState<Msg>(null);
-  const set = (i: number, k: 'start' | 'end', v: string) => setTimes(times.map((t, j) => (j === i ? { ...t, [k]: v } : t)));
-  const submit = (e: FormEvent) => {
-    e.preventDefault();
-    for (let i = 0; i < times.length; i++) {
-      if (!times[i].start || !times[i].end || times[i].start >= times[i].end) return setMsg({ kind: 'error', text: `${i + 1}교시: 끝나는 시간이 시작 시간보다 늦어야 합니다.` });
-      if (i > 0 && times[i].start < times[i - 1].end) return setMsg({ kind: 'error', text: `${i + 1}교시가 ${i}교시와 겹칩니다.` });
-    }
-    save({ periodTimes: times });
-    setMsg({ kind: 'success', text: '교시 시간을 저장했습니다.' });
-  };
+function PeriodSection({ settings }: { settings: Settings }) {
   return (
-    <form className="card" onSubmit={submit}>
+    <section className="card">
       <h3>교시 시간</h3>
-      <div className="periods">
-        {times.map((t, i) => (
-          <div key={i} className="period-row">
-            <span>{i + 1}교시</span>
-            <input type="time" value={t.start} onChange={(e) => set(i, 'start', e.target.value)} aria-label={`${i + 1}교시 시작`} required />
-            <span>~</span>
-            <input type="time" value={t.end} onChange={(e) => set(i, 'end', e.target.value)} aria-label={`${i + 1}교시 끝`} required />
-          </div>
+      <p className="muted small">우리 학교 시간표 기준으로 고정되어 있습니다.</p>
+      <ul className="list period-fixed">
+        {settings.periodTimes.map((t, i) => (
+          <Fragment key={i}>
+            {t.start === LUNCH_TIME.end && (
+              <li className="lunch">
+                <span className="badge warn">점심</span>
+                <span>
+                  {LUNCH_TIME.start} ~ {LUNCH_TIME.end}
+                </span>
+              </li>
+            )}
+            <li>
+              <span className="badge">{i + 1}교시</span>
+              <span>
+                {t.start} ~ {t.end}
+              </span>
+            </li>
+          </Fragment>
         ))}
-      </div>
-      <div className="actions">
-        <button type="button" className="btn ghost small" disabled={times.length >= 10} onClick={() => setTimes([...times, { start: times.at(-1)?.end ?? '09:00', end: times.at(-1)?.end ?? '09:50' }])}>
-          + 교시
-        </button>
-        <button
-          type="button"
-          className="btn ghost small"
-          disabled={times.length <= 1}
-          onClick={() => {
-            if (timetableCount > 0 && !confirm(`${times.length}교시를 없애면 시간표의 ${times.length}교시 칸은 화면에 보이지 않습니다. 계속할까요?`)) return;
-            setTimes(times.slice(0, -1));
-          }}
-        >
-          − 교시
-        </button>
-        <span className="grow" />
-        <button className="btn primary">저장</button>
-      </div>
-      {msg && <Banner kind={msg.kind}>{msg.text}</Banner>}
-    </form>
+      </ul>
+    </section>
   );
 }
 

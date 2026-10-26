@@ -12,7 +12,8 @@ const LISTS: ListCollection[] = ['timetable', 'assignments', 'exams', 'events', 
 
 function mergeSettings(s: Partial<Settings> | undefined): Settings {
   const base = defaultSettings();
-  return { ...base, ...(s ?? {}), id: 'settings', periodTimes: s?.periodTimes?.length ? s.periodTimes : base.periodTimes };
+  // 교시 시간은 학교 고정값을 쓰므로 예전에 저장된 값은 무시합니다.
+  return { ...base, ...(s ?? {}), id: 'settings', periodTimes: base.periodTimes };
 }
 
 /** 로컬 데모 모드: 계정(이메일)별로 localStorage에 저장 */
