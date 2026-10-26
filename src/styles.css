@@ -310,4 +310,5 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .tt td.changed small.was { color: var(--warn); opacity: 0.85; text-decoration: line-through; }
 .legend-changed { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--warn-soft); border: 1px solid var(--warn); vertical-align: -1px; margin-right: 4px; }
 .changed-badge { margin-left: 6px; }
-.tt thead th .today-badge { margin-left: 6px; vertical-align: 1px; }
+.tt thead th { vertical-align: bottom; }
+.tt thead th .today-badge { display: table; margin: 0 auto 4px; }
