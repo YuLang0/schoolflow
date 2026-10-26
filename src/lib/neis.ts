@@ -136,7 +136,11 @@ export function parseDishes(raw: string): Dish[] {
       const m = s.match(/\s*(?:\(\s*(\d{1,2}(?:\.\d{1,2})*\.?)\s*\)|((?:\d{1,2}\.)+\d{0,2}))\s*$/);
       const nums = m ? (m[1] ?? m[2]) : '';
       const allergens = nums ? nums.split('.').filter(Boolean).map(Number).filter((n) => n >= 1 && n <= 19) : [];
-      const name = (m ? s.slice(0, m.index) : s).replace(/[*#]+$/, '').trim();
+      // 학교마다 붙이는 앞쪽 "-", "·" 와 끝의 "*", "." 정리
+      const name = (m ? s.slice(0, m.index) : s)
+        .replace(/^[-·•*\s]+/, '')
+        .replace(/[*#.\s]+$/, '')
+        .trim();
       return { name, allergens };
     })
     .filter((d) => d.name);

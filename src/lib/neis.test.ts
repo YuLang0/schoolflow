@@ -30,6 +30,11 @@ describe('급식', () => {
       { name: '우유', allergens: [] },
     ]);
   });
+  it('학교마다 다른 앞뒤 기호 정리', () => {
+    expect(parseDishes('-발아현미밥<br/>-등뼈감자탕.<br/>백김치<br/>-구이김(선택)<br/>-치즈계란말이. (1.2.5)').map((d) => d.name)).toEqual([
+      '발아현미밥', '등뼈감자탕', '백김치', '구이김(선택)', '치즈계란말이',
+    ]);
+  });
   it('row 변환', () => {
     expect(toMeal({ MLSV_YMD: '20261026', MMEAL_SC_NM: '중식', DDISH_NM: '밥<br/>국 (5)', CAL_INFO: '800.1 Kcal' })).toEqual({
       date: '2026-10-26',
