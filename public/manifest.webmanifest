@@ -1,0 +1,15 @@
+{
+  "name": "SchoolFlow",
+  "short_name": "SchoolFlow",
+  "description": "시간표 · 과제 · 시험 · 공지를 한곳에서",
+  "lang": "ko",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#0b1020",
+  "theme_color": "#5b3df5",
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

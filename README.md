@@ -1,0 +1,32 @@
+# SchoolFlow
+
+고등학생을 위한 학교생활 통합관리 웹앱입니다. 시간표 · 과제 · 시험 · 달력 · 공지를 한곳에서 관리합니다.
+
+## 기능
+- 화면: 로그인, 홈(대시보드), 시간표, 과제, 시험, 달력, 공지, 검색, 설정
+- 저장 모드 2가지
+  - **로컬 데모 모드**: Supabase 설정이 없으면 데이터를 브라우저에만 저장
+  - **계정 동기화 모드**: Supabase에 계정별로 저장 (RLS로 본인 데이터만 접근)
+- 계정: 회원가입(이메일 인증), 인증 메일 재발송, **비밀번호 찾기(재설정 메일)**, **설정에서 비밀번호 변경**
+- 다크 모드, 과제·시험·수업 알림, JSON 백업/복원, CSV 내보내기, PWA(홈 화면 설치·오프라인)
+
+## 개발
+```bash
+npm install
+cp .env.example .env   # Supabase 값을 넣거나, 비워 두면 로컬 데모 모드
+npm run dev
+npm test               # 단위 테스트
+npm run build          # 타입 검사 + 배포 빌드 (dist/)
+```
+
+## Supabase 준비
+1. SQL Editor에서 `supabase/schema.sql` 실행
+2. Authentication → URL Configuration
+   - Site URL: 배포 주소 (예: `https://sweet-yeot-a1cc41.netlify.app`)
+   - Redirect URLs: `https://sweet-yeot-a1cc41.netlify.app/**`, `http://localhost:5173/**`
+3. 배포 환경변수: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
+   (anon public 키만 넣으세요. service_role 키는 절대 넣지 마세요.)
+
+## 배포 (Netlify)
+`netlify.toml`에 빌드 설정이 있습니다. 저장소를 Netlify 사이트에 연결하면 push할 때마다 자동 배포됩니다.
+보안 헤더는 `public/_headers`에 있습니다.
