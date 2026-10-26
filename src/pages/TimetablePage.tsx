@@ -73,6 +73,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
               {DAY_NAMES.map((d, i) => (
                 <th key={d} className={i === today ? 'today' : ''}>
                   {d}
+                  {i === today && <span className="badge today-badge">오늘</span>}
                 </th>
               ))}
             </tr>
