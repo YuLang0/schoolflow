@@ -163,12 +163,17 @@ export async function fetchMeals(school: Pick<NeisSchool, 'officeCode' | 'school
   return rows.map(toMeal).sort((a, b) => a.date.localeCompare(b.date) || (MEAL_ORDER[a.type] ?? 9) - (MEAL_ORDER[b.type] ?? 9));
 }
 
+/** 나이스 과목명 앞에 붙는 "* ", "- " 같은 표시 제거 */
+export function cleanSubject(s: string): string {
+  return s.replace(/^[\s*\-·•]+/, '').trim();
+}
+
 export function toTimetableRows(rows: Row[]): TimetableRow[] {
   return rows
     .map((r) => {
       const date = fromYmd(r.ALL_TI_YMD);
       const [y, m, d] = date.split('-').map(Number);
-      return { date, day: weekdayIndex(new Date(y, m - 1, d)), period: Number(r.PERIO), subject: (r.ITRT_CNTNT ?? '').replace(/^-\s*/, '').trim() };
+      return { date, day: weekdayIndex(new Date(y, m - 1, d)), period: Number(r.PERIO), subject: cleanSubject(r.ITRT_CNTNT ?? '') };
     })
     .filter((r) => r.day <= 4 && r.period >= 1 && r.period <= 12 && r.subject);
 }

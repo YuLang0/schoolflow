@@ -1,4 +1,4 @@
-import type { TimetableRow } from './neis';
+import { cleanSubject, type TimetableRow } from './neis';
 import { newId, type TimetableEntry } from './types';
 
 /**
@@ -22,7 +22,8 @@ export function mergeNeisTimetable(
     seen.add(key);
     const prev = existing.find((e) => e.day === r.day && e.period === r.period);
     const subject = r.subject.slice(0, 30);
-    const same = prev && prev.subject === subject;
+    // 예전에 '* 화면 구현'처럼 표시가 붙은 채 저장된 과목도 같은 과목으로 봅니다
+    const same = prev && cleanSubject(prev.subject) === subject;
     imported.push({
       id: same ? prev.id : newId(),
       day: r.day,

@@ -49,6 +49,7 @@ describe('시간표', () => {
   const rows = toTimetableRows([
     { ALL_TI_YMD: '20261026', PERIO: '1', ITRT_CNTNT: '수학Ⅰ' },
     { ALL_TI_YMD: '20261026', PERIO: '2', ITRT_CNTNT: '- 영어' },
+    { ALL_TI_YMD: '20261026', PERIO: '3', ITRT_CNTNT: '* 화면 구현' },
     { ALL_TI_YMD: '20261027', PERIO: '8', ITRT_CNTNT: '자율' },
     { ALL_TI_YMD: '20261031', PERIO: '1', ITRT_CNTNT: '토요일' },
     { ALL_TI_YMD: '20261028', PERIO: '1', ITRT_CNTNT: '' },
@@ -57,6 +58,7 @@ describe('시간표', () => {
     expect(rows).toEqual([
       { date: '2026-10-26', day: 0, period: 1, subject: '수학Ⅰ' },
       { date: '2026-10-26', day: 0, period: 2, subject: '영어' },
+      { date: '2026-10-26', day: 0, period: 3, subject: '화면 구현' },
       { date: '2026-10-27', day: 1, period: 8, subject: '자율' },
     ]);
   });
@@ -72,6 +74,10 @@ describe('시간표', () => {
     expect(r.timetable.find((e) => e.day === 0 && e.period === 1)).toMatchObject({ id: 'a', room: '수학실' });
     expect(r.timetable.some((e) => e.id === 'b')).toBe(false); // 월요일은 나이스 내용으로 교체
     expect(r.timetable.find((e) => e.id === 'c')).toBeTruthy(); // 목요일은 유지
+  });
+  it("예전에 '* 화면 구현'으로 저장된 칸은 바뀐 것으로 보지 않고 '*'만 지움", () => {
+    const r = mergeNeisTimetable([{ id: 'x', day: 0, period: 3, subject: '* 화면 구현', room: '실습실', teacher: '' }], rows);
+    expect(r.timetable.find((e) => e.day === 0 && e.period === 3)).toMatchObject({ id: 'x', subject: '화면 구현', room: '실습실', changedFrom: null });
   });
   it('바뀐 수업 표시: 과목이 달라지면 이전 과목 기록, 같으면 표시 없음, 빈 칸에 처음 들어온 건 표시 없음', () => {
     const existing = [
