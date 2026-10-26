@@ -53,10 +53,19 @@ export interface PeriodTime {
   end: string;
 }
 
+export interface SchoolRef {
+  officeCode: string; // 나이스 시도교육청 코드
+  schoolCode: string; // 나이스 학교 코드
+  name: string;
+}
+
 export interface Settings {
   id: 'settings';
   schoolName: string;
-  grade: string;
+  school: SchoolRef | null; // 나이스에서 고른 학교
+  gradeNo: string; // 학년 (예: '2')
+  classNo: string; // 반 (예: '3')
+  allergies: number[]; // 급식 알레르기 번호 1~19
   periodTimes: PeriodTime[];
   notifications: boolean;
   remindDays: number; // 마감 며칠 전부터 알릴지
@@ -95,7 +104,10 @@ export function defaultSettings(): Settings {
   return {
     id: 'settings',
     schoolName: '',
-    grade: '',
+    school: null,
+    gradeNo: '',
+    classNo: '',
+    allergies: [],
     periodTimes: DEFAULT_PERIOD_TIMES.map((p) => ({ ...p })),
     notifications: false,
     remindDays: 1,

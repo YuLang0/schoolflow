@@ -8,6 +8,7 @@
   - **로컬 데모 모드**: Supabase 설정이 없으면 데이터를 브라우저에만 저장
   - **계정 동기화 모드**: Supabase에 계정별로 저장 (RLS로 본인 데이터만 접근)
 - 계정: 회원가입(이메일 인증), 인증 메일 재발송, **비밀번호 찾기(재설정 메일)**, **설정에서 비밀번호 변경**
+- 나이스 연동: 학교 검색, 시간표 가져오기, 주간 급식표(알레르기 메뉴 강조)
 - 다크 모드, 과제·시험·수업 알림, JSON 백업/복원, CSV 내보내기, PWA(홈 화면 설치·오프라인)
 
 ## 개발
@@ -26,6 +27,11 @@ npm run build          # 타입 검사 + 배포 빌드 (dist/)
    - Redirect URLs: `https://sweet-yeot-a1cc41.netlify.app/**`, `http://localhost:5173/**`
 3. 배포 환경변수: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
    (anon public 키만 넣으세요. service_role 키는 절대 넣지 마세요.)
+
+## 나이스 API
+- 요청은 Netlify 함수 `netlify/functions/neis.mjs`(`/api/neis`)를 거쳐 나이스로 갑니다. 인증키가 브라우저에 노출되지 않습니다.
+- [나이스 교육정보 개방 포털](https://open.neis.go.kr)에서 인증키를 발급받아 Netlify 환경변수 `NEIS_API_KEY`에 넣으세요.
+  키가 없으면 나이스 샘플 제한(한 번에 5건)이 걸려 시간표가 일부만 들어옵니다.
 
 ## 배포 (Netlify)
 `netlify.toml`에 빌드 설정이 있습니다. 저장소를 Netlify 사이트에 연결하면 push할 때마다 자동 배포됩니다.

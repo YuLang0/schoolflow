@@ -7,13 +7,14 @@ import { AssignmentsPage } from '../pages/AssignmentsPage';
 import { CalendarPage } from '../pages/CalendarPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { ExamsPage } from '../pages/ExamsPage';
+import { MealsPage } from '../pages/MealsPage';
 import { NoticesPage } from '../pages/NoticesPage';
 import { SearchPage } from '../pages/SearchPage';
 import { SettingsPage } from '../pages/SettingsPage';
 import { TimetablePage } from '../pages/TimetablePage';
 import { Banner } from './ui';
 
-export type View = 'dashboard' | 'timetable' | 'assignments' | 'exams' | 'calendar' | 'notices' | 'search' | 'settings';
+export type View = 'dashboard' | 'timetable' | 'meals' | 'assignments' | 'exams' | 'calendar' | 'notices' | 'search' | 'settings';
 export interface Focus {
   view: View;
   id?: string;
@@ -23,6 +24,7 @@ export interface Focus {
 const NAV: { view: View; label: string; icon: string }[] = [
   { view: 'dashboard', label: '홈', icon: '🏠' },
   { view: 'timetable', label: '시간표', icon: '🗓️' },
+  { view: 'meals', label: '급식', icon: '🍚' },
   { view: 'assignments', label: '과제', icon: '📝' },
   { view: 'exams', label: '시험', icon: '🎯' },
   { view: 'calendar', label: '달력', icon: '📅' },
@@ -108,6 +110,7 @@ export function Shell({
           <>
             {focus.view === 'dashboard' && <DashboardPage data={data} api={api} user={user} go={go} />}
             {focus.view === 'timetable' && <TimetablePage data={data} api={api} />}
+            {focus.view === 'meals' && <MealsPage data={data} go={go} />}
             {focus.view === 'assignments' && <AssignmentsPage data={data} api={api} focusId={focus.id} />}
             {focus.view === 'exams' && <ExamsPage data={data} api={api} focusId={focus.id} />}
             {focus.view === 'calendar' && <CalendarPage data={data} api={api} go={go} initialDate={focus.date} />}

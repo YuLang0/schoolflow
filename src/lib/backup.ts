@@ -12,6 +12,12 @@ const str = (v: unknown, max = 2000) => (typeof v === 'string' ? v.slice(0, max)
 const id = (v: unknown) => (typeof v === 'string' && v.length > 0 && v.length <= 100 ? v : crypto.randomUUID());
 const arr = (v: unknown): Record<string, unknown>[] =>
   Array.isArray(v) ? v.filter((x): x is Record<string, unknown> => !!x && typeof x === 'object') : [];
+const schoolRef = (v: unknown) => {
+  const o = (v && typeof v === 'object' ? v : {}) as Record<string, unknown>;
+  const officeCode = str(o.officeCode, 10);
+  const schoolCode = str(o.schoolCode, 20);
+  return officeCode && schoolCode ? { officeCode, schoolCode, name: str(o.name, 100) } : null;
+};
 const time = (v: unknown) => (typeof v === 'string' && /^\d{2}:\d{2}$/.test(v) ? v : '');
 
 /** 백업 파일을 검증해 AppData로 변환. 형식이 틀리면 한국어 오류 메시지로 throw */
@@ -93,7 +99,12 @@ export function parseBackup(text: string): AppData {
   const settings = {
     ...base,
     schoolName: str(s.schoolName, 100),
-    grade: str(s.grade, 20),
+    school: schoolRef(s.school),
+    gradeNo: str(s.gradeNo, 5),
+    classNo: str(s.classNo, 10),
+    allergies: Array.isArray(s.allergies)
+      ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)
+      : [],
     periodTimes: periodTimes.length ? periodTimes.slice(0, 12) : base.periodTimes,
     notifications: s.notifications === true,
     remindDays: typeof s.remindDays === 'number' ? Math.min(7, Math.max(0, Math.round(s.remindDays))) : base.remindDays,

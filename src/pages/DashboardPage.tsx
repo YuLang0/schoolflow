@@ -1,5 +1,7 @@
 import type { Focus } from '../components/Shell';
+import { MealCard } from '../components/MealCard';
 import { Empty } from '../components/ui';
+import { useMeals } from '../hooks/useMeals';
 import type { DataApi } from '../hooks/useAppData';
 import { ddayLabel, diffDays, formatKoreanDate, toDateStr } from '../lib/date';
 import { classStatus, todayClasses } from '../lib/schedule';
@@ -41,6 +43,8 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
   const doneCount = data.assignments.filter((a) => a.done).length;
+  const meals = useMeals(data.settings.school, today, today);
+  const lunch = meals.meals?.find((m) => m.type === '중식') ?? meals.meals?.[0];
 
   return (
     <div className="stack">
@@ -143,6 +147,24 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
             </ul>
           )}
         </section>
+
+        {data.settings.school && (
+          <section className="card">
+            <div className="card-head">
+              <h3>오늘 급식</h3>
+              <button className="link" onClick={() => go({ view: 'meals' })}>
+                이번 주 보기
+              </button>
+            </div>
+            {meals.error ? (
+              <Empty>{meals.error}</Empty>
+            ) : lunch ? (
+              <MealCard meal={lunch} allergies={data.settings.allergies} showNumbers={false} />
+            ) : (
+              <Empty>{meals.loading ? '불러오는 중…' : '오늘은 급식 정보가 없습니다.'}</Empty>
+            )}
+          </section>
+        )}
 
         <section className="card">
           <div className="card-head">

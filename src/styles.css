@@ -262,7 +262,7 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
   .content { padding: 16px 16px calc(84px + env(safe-area-inset-bottom)); }
   .bottombar {
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(8, 1fr);
     position: fixed;
     bottom: 0;
     left: 0;
@@ -281,3 +281,18 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
   .modal-backdrop { align-items: end; padding: 0; }
   .modal { border-radius: 16px 16px 0 0; max-height: 90vh; padding-bottom: calc(20px + env(safe-area-inset-bottom)); }
 }
+
+/* 나이스: 학교 검색 · 급식 */
+.search-row { display: flex; gap: 8px; }
+.school-chosen { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--card-2); }
+.school-list { max-height: 280px; overflow-y: auto; margin-top: 8px; border: 1px solid var(--line); border-radius: 10px; padding: 0 8px; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line); background: var(--card-2); border-radius: 999px; padding: 6px 12px; cursor: pointer; font-size: 0.85rem; }
+.chip.on { background: var(--danger-soft); border-color: var(--danger); color: var(--danger); font-weight: 700; }
+.meal-week { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+.meal-day.today { border-color: var(--primary); box-shadow: 0 0 0 2px var(--primary-soft); }
+.meal-day h3 { display: flex; align-items: center; gap: 6px; }
+.meal + .meal { margin-top: 12px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.meal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.dishes { list-style: none; margin: 0; padding: 0; line-height: 1.8; }
+.dishes li.allergic { color: var(--danger); font-weight: 700; }
