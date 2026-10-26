@@ -305,3 +305,8 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .tt .lunch-row td { text-align: center; color: var(--warn); background: var(--warn-soft); border-radius: 10px; font-size: 0.85rem; font-weight: 600; padding: 8px; }
 .period-fixed li { gap: 12px; padding: 8px 4px; }
 .period-fixed li.lunch { color: var(--warn); }
+.tt td.changed button { background: var(--warn-soft); border-color: var(--warn); }
+.tt td.changed strong { color: var(--warn); }
+.tt td.changed small.was { color: var(--warn); opacity: 0.85; text-decoration: line-through; }
+.legend-changed { display: inline-block; width: 12px; height: 12px; border-radius: 3px; background: var(--warn-soft); border: 1px solid var(--warn); vertical-align: -1px; margin-right: 4px; }
+.changed-badge { margin-left: 6px; }

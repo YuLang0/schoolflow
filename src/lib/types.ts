@@ -7,6 +7,8 @@ export interface TimetableEntry {
   subject: string;
   room: string;
   teacher: string;
+  /** 나이스에서 가져올 때 이전과 과목이 달라졌으면 이전 과목 이름 (직접 고치면 지워짐) */
+  changedFrom?: string | null;
 }
 
 export interface Assignment {

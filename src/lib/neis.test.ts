@@ -73,6 +73,20 @@ describe('시간표', () => {
     expect(r.timetable.some((e) => e.id === 'b')).toBe(false); // 월요일은 나이스 내용으로 교체
     expect(r.timetable.find((e) => e.id === 'c')).toBeTruthy(); // 목요일은 유지
   });
+  it('바뀐 수업 표시: 과목이 달라지면 이전 과목 기록, 같으면 표시 없음, 빈 칸에 처음 들어온 건 표시 없음', () => {
+    const existing = [
+      { id: 'a', day: 0, period: 1, subject: '수학Ⅰ', room: '', teacher: '' },
+      { id: 'b', day: 0, period: 2, subject: '국어', room: '', teacher: '' },
+      { id: 'c', day: 1, period: 7, subject: '음악', room: '', teacher: '' },
+    ];
+    const r = mergeNeisTimetable(existing, rows);
+    const at = (d: number, p: number) => r.timetable.find((e) => e.day === d && e.period === p);
+    expect(at(0, 1)?.changedFrom).toBeNull(); // 수학Ⅰ 그대로
+    expect(at(0, 2)).toMatchObject({ subject: '영어', changedFrom: '국어' });
+    expect(at(1, 8)?.changedFrom).toBeNull(); // 빈 칸에 새로 들어옴
+    expect(at(1, 7)).toMatchObject({ subject: '수업 없음', changedFrom: '음악' }); // 나이스에서 빠짐
+    expect(r.changed).toBe(2);
+  });
   it('이번 주 (주말이면 다음 주)', () => {
     expect(schoolWeek(new Date(2026, 9, 28))).toEqual({ from: '2026-10-26', to: '2026-10-30' });
     expect(schoolWeek(new Date(2026, 9, 31))).toEqual({ from: '2026-11-02', to: '2026-11-06' });

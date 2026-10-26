@@ -72,7 +72,8 @@ let directMode = false; // 서버 중계가 막혀 브라우저에서 나이스�
 export const isNeisLimited = () => directMode;
 
 async function viaProxy(endpoint: string, params: Record<string, string>): Promise<unknown> {
-  const res = await fetch(`/api/neis?${new URLSearchParams({ endpoint, ...params })}`);
+  // v=2: 인증키 없이 5건만 받던 예전 응답이 브라우저 캐시에 남아 있지 않도록
+  const res = await fetch(`/api/neis?${new URLSearchParams({ endpoint, ...params, v: '2' })}`);
   const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
   if (!body) throw new Error(`나이스 정보를 가져오지 못했습니다. (서버 응답 오류 ${res.status})`);
   if (!res.ok && typeof body.error === 'string') {

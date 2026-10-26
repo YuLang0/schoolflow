@@ -5,7 +5,7 @@ import type { SchoolRef } from '../lib/types';
 const TTL = 3 * 60 * 60 * 1000; // 3시간
 
 function cacheKey(school: SchoolRef, from: string, to: string) {
-  return `sf:meals:${school.officeCode}:${school.schoolCode}:${from}:${to}`;
+  return `sf:meals:v2:${school.officeCode}:${school.schoolCode}:${from}:${to}`;
 }
 
 /** 급식 정보 (이 기기에 3시간 동안 저장해 나이스 호출을 줄임) */

@@ -12,7 +12,10 @@ const ENDPOINTS = {
 const json = (body, status = 200, extra = {}) =>
   new Response(JSON.stringify(body), { status, headers: { 'content-type': 'application/json; charset=utf-8', ...extra } });
 
-export default async function handler(req, env = globalThis.process?.env ?? {}) {
+// Netlify는 두 번째 인자로 context를 넘깁니다. 환경변수는 Netlify.env / process.env에서 읽습니다.
+// (세 번째 인자는 테스트·개발 서버용)
+export default async function handler(req, _context, env) {
+  const key = env?.NEIS_API_KEY ?? globalThis.Netlify?.env?.get('NEIS_API_KEY') ?? globalThis.process?.env?.NEIS_API_KEY ?? '';
   const url = new URL(req.url);
   const endpoint = url.searchParams.get('endpoint') ?? '';
   const allowed = ENDPOINTS[endpoint];
@@ -21,8 +24,8 @@ export default async function handler(req, env = globalThis.process?.env ?? {}) 
   const out = new URL(`https://open.neis.go.kr/hub/${endpoint}`);
   out.searchParams.set('Type', 'json');
   out.searchParams.set('pIndex', '1');
-  out.searchParams.set('pSize', env.NEIS_API_KEY ? '1000' : '100');
-  if (env.NEIS_API_KEY) out.searchParams.set('KEY', env.NEIS_API_KEY);
+  out.searchParams.set('pSize', key ? '1000' : '100');
+  if (key) out.searchParams.set('KEY', key);
   for (const name of allowed) {
     const v = url.searchParams.get(name);
     if (v !== null && v !== '') out.searchParams.set(name, v.slice(0, 50));

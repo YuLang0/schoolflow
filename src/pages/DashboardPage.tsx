@@ -85,7 +85,10 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
               {classes.map((c) => (
                 <li key={c.id} className={status.kind === 'class' && status.period === c.period ? 'now' : ''}>
                   <span className="badge">{c.period}교시</span>
-                  <span className="grow">{c.subject}</span>
+                  <span className="grow">
+                    {c.subject}
+                    {c.changedFrom && <span className="badge warn changed-badge">변경 · 원래 {c.changedFrom}</span>}
+                  </span>
                   <span className="muted small">
                     {data.settings.periodTimes[c.period - 1]?.start ?? ''} {c.room}
                   </span>

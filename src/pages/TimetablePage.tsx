@@ -39,7 +39,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
       if (ok)
         setMsg({
           kind: 'success',
-          text: `나이스에서 ${rows.length}개 수업을 가져왔습니다. (${dayNames}) 바뀐 수업이 있으면 칸을 눌러 고칠 수 있습니다.${extra > 0 ? ` (8교시 이후 ${extra}개는 제외)` : ''}${isNeisLimited() ? ' ※ 서버 연결이 막혀 나이스에 직접 연결했기 때문에 5개까지만 받아 왔습니다.' : ''}`,
+          text: `나이스에서 ${rows.length}개 수업을 가져왔습니다. (${dayNames})${merged.changed > 0 ? ` 지난번과 달라진 수업 ${merged.changed}개는 주황색으로 표시했습니다.` : ''}${extra > 0 ? ` (8교시 이후 ${extra}개는 제외)` : ''}${isNeisLimited() ? ' ※ 서버 연결이 막혀 나이스에 직접 연결했기 때문에 5개까지만 받아 왔습니다.' : ''}`,
         });
     } catch (e) {
       setMsg({ kind: 'error', text: (e as Error).message });
@@ -98,12 +98,16 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
                   const e = entryAt(data.timetable, day, pi + 1);
                   const isNow = day === today && status.kind === 'class' && status.period === pi + 1;
                   return (
-                    <td key={day} className={`${day === today ? 'today' : ''} ${isNow ? 'now' : ''}`}>
-                      <button onClick={() => open(day, pi + 1)} aria-label={`${DAY_NAMES[day]}요일 ${pi + 1}교시 ${e?.subject ?? '비어 있음'}`}>
+                    <td key={day} className={`${day === today ? 'today' : ''} ${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''}`}>
+                      <button
+                        onClick={() => open(day, pi + 1)}
+                        aria-label={`${DAY_NAMES[day]}요일 ${pi + 1}교시 ${e?.subject ?? '비어 있음'}${e?.changedFrom ? ` (변경됨, 이전: ${e.changedFrom})` : ''}`}
+                        title={e?.changedFrom ? `변경됨 · 이전: ${e.changedFrom}` : undefined}
+                      >
                         {e ? (
                           <>
                             <strong>{e.subject}</strong>
-                            {e.room && <small>{e.room}</small>}
+                            {e.changedFrom ? <small className="was">← {e.changedFrom}</small> : e.room && <small>{e.room}</small>}
                           </>
                         ) : (
                           <span className="plus">+</span>
@@ -118,6 +122,24 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
           </tbody>
         </table>
       </div>
+      {data.timetable.some((e) => e.changedFrom) && (
+        <div className="toolbar">
+          <p className="small muted grow">
+            <span className="legend-changed" /> 주황색 칸은 나이스에서 가져올 때 지난번과 달라진 수업입니다. (← 이전 과목)
+          </p>
+          <button
+            className="btn ghost small"
+            onClick={() =>
+              void api.replaceAll({
+                ...data,
+                timetable: data.timetable.filter((e) => !(e.changedFrom && e.subject === '수업 없음')).map((e) => ({ ...e, changedFrom: null })),
+              })
+            }
+          >
+            변경 표시 지우기
+          </button>
+        </div>
+      )}
       {edit && <EntryModal entry={edit} exists={data.timetable.some((x) => x.id === edit.id)} api={api} onClose={() => setEdit(null)} />}
     </div>
   );
@@ -128,7 +150,8 @@ function EntryModal({ entry, exists, api, onClose }: { entry: TimetableEntry; ex
   const save = (e: FormEvent) => {
     e.preventDefault();
     if (!f.subject.trim()) return;
-    void api.upsert('timetable', { ...f, subject: f.subject.trim(), room: f.room.trim(), teacher: f.teacher.trim() });
+    // 직접 고치면 '변경됨' 표시는 지웁니다
+    void api.upsert('timetable', { ...f, subject: f.subject.trim(), room: f.room.trim(), teacher: f.teacher.trim(), changedFrom: null });
     onClose();
   };
   return (

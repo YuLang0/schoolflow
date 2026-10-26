@@ -46,6 +46,7 @@ export function parseBackup(text: string): AppData {
       subject: str(e.subject, 50),
       room: str(e.room, 50),
       teacher: str(e.teacher, 50),
+      changedFrom: str(e.changedFrom, 50) || null,
     }))
     .filter((e) => e.subject);
 

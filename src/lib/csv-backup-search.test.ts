@@ -18,7 +18,7 @@ describe('backup', () => {
   it('내보낸 백업을 그대로 복원', () => {
     const d = emptyData();
     d.assignments.push({ id: 'a', title: '과제', subject: '수학', due: '2026-10-30', priority: 'high', memo: '', done: true, doneAt: '2026-10-26', createdAt: 'x' });
-    d.timetable.push({ id: 't', day: 2, period: 3, subject: '과학', room: '', teacher: '' });
+    d.timetable.push({ id: 't', day: 2, period: 3, subject: '과학', room: '', teacher: '', changedFrom: '수학' });
     d.settings.remindDays = 3;
     expect(parseBackup(makeBackup(d))).toEqual(d);
   });

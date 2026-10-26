@@ -9,7 +9,7 @@ function neisDevProxy(): Plugin {
       server.middlewares.use('/api/neis', async (req, res) => {
         const modPath = new URL('./netlify/functions/neis.mjs', import.meta.url).href;
         const { default: handler } = await import(/* @vite-ignore */ modPath);
-        const r: Response = await handler(new Request(`http://localhost${req.originalUrl ?? req.url}`), process.env);
+        const r: Response = await handler(new Request(`http://localhost${req.originalUrl ?? req.url}`), {}, process.env);
         res.statusCode = r.status;
         r.headers.forEach((v, k) => res.setHeader(k, v));
         res.end(await r.text());
