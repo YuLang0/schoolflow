@@ -23,8 +23,8 @@ npm run build          # 타입 검사 + 배포 빌드 (dist/)
 ## Supabase 준비
 1. SQL Editor에서 `supabase/schema.sql` 실행
 2. Authentication → URL Configuration
-   - Site URL: 배포 주소 (예: `https://sweet-yeot-a1cc41.netlify.app`)
-   - Redirect URLs: `https://sweet-yeot-a1cc41.netlify.app/**`, `http://localhost:5173/**`
+   - Site URL: 배포 주소 (예: `https://schoolflow-yulang.netlify.app`)
+   - Redirect URLs: `https://schoolflow-yulang.netlify.app/**`, `http://localhost:5173/**`
 3. 배포 환경변수: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`
    (anon public 키만 넣으세요. service_role 키는 절대 넣지 마세요.)
 
