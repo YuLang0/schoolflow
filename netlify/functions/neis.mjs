@@ -29,16 +29,24 @@ export default async function handler(req, env = globalThis.process?.env ?? {}) 
   }
 
   try {
-    const res = await fetch(out, { headers: { accept: 'application/json' }, signal: AbortSignal.timeout(10000) });
+    const res = await fetch(out, {
+      headers: { accept: 'application/json, text/plain, */*', 'user-agent': 'Mozilla/5.0 (compatible; SchoolFlow/1.1; +https://schoolflow-yulang.netlify.app)' },
+      signal: AbortSignal.timeout(10000),
+    });
     const text = await res.text();
-    if (!res.ok) return json({ error: `나이스 서버 오류 (${res.status})` }, 502);
+    if (!res.ok || !text.trimStart().startsWith('{')) {
+      // Netlify 함수 로그(Logs → Functions)에서 원인을 볼 수 있게 남깁니다. 인증키는 남기지 않습니다.
+      console.error('NEIS upstream', res.status, endpoint, text.slice(0, 300));
+      return json({ error: `나이스 서버 오류 (${res.status})`, upstream: res.status, detail: text.replace(/\s+/g, ' ').slice(0, 120) }, 502);
+    }
     // 학교 검색은 자주 바뀌지 않고, 급식·시간표도 짧게 캐시해 나이스 호출 수를 줄입니다.
     const maxAge = endpoint === 'schoolInfo' || endpoint === 'classInfo' ? 86400 : 1800;
     return new Response(text, {
       status: 200,
       headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': `public, max-age=${maxAge}` },
     });
-  } catch {
+  } catch (e) {
+    console.error('NEIS fetch failed', endpoint, String(e));
     return json({ error: '나이스 서버에 연결하지 못했습니다. 잠시 후 다시 시도해 주세요.' }, 504);
   }
 }

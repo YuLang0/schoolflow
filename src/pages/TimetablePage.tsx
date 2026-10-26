@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react';
 import { Banner, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
 import { formatKoreanDate, weekdayIndex } from '../lib/date';
-import { fetchTimetable, schoolWeek } from '../lib/neis';
+import { fetchTimetable, isNeisLimited, schoolWeek } from '../lib/neis';
 import { extendPeriods, mergeNeisTimetable } from '../lib/neisImport';
 import { classStatus, entryAt } from '../lib/schedule';
 import { DAY_NAMES, newId, type AppData, type TimetableEntry } from '../lib/types';
@@ -34,7 +34,11 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
       const dayNames = merged.days.map((d) => DAY_NAMES[d]).join('·');
       if (data.timetable.length > 0 && !confirm(`${formatKoreanDate(week.from)} 주 시간표(${dayNames})를 나이스 내용으로 바꿉니다. 계속할까요?`)) return;
       const ok = await api.replaceAll({ ...data, settings: { ...data.settings, periodTimes: extendPeriods(data.settings.periodTimes, merged.maxPeriod) }, timetable: merged.timetable });
-      if (ok) setMsg({ kind: 'success', text: `나이스에서 ${rows.length}개 수업을 가져왔습니다. (${dayNames}) 바뀐 수업이 있으면 칸을 눌러 고칠 수 있습니다.` });
+      if (ok)
+        setMsg({
+          kind: 'success',
+          text: `나이스에서 ${rows.length}개 수업을 가져왔습니다. (${dayNames}) 바뀐 수업이 있으면 칸을 눌러 고칠 수 있습니다.${isNeisLimited() ? ' ※ 서버 연결이 막혀 나이스에 직접 연결했기 때문에 5개까지만 받아 왔습니다.' : ''}`,
+        });
     } catch (e) {
       setMsg({ kind: 'error', text: (e as Error).message });
     } finally {

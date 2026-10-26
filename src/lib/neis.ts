@@ -66,19 +66,44 @@ function neisErrorMessage(code?: string, message?: string): string {
   return `나이스 오류: ${message ?? code ?? '알 수 없음'}`;
 }
 
-async function call(endpoint: string, params: Record<string, string>): Promise<Row[]> {
-  const q = new URLSearchParams({ endpoint, ...params });
-  let res: Response;
-  try {
-    res = await fetch(`/api/neis?${q}`);
-  } catch {
-    throw new Error('나이스 정보를 가져오지 못했습니다. 인터넷 연결을 확인해 주세요.');
+let directMode = false; // 서버 중계가 막혀 브라우저에서 나이스로 바로 연결 중인지
+
+/** 서버 중계가 실패해 나이스에 직접 연결했는지 (이때는 인증키 없이 한 번에 최대 5건) */
+export const isNeisLimited = () => directMode;
+
+async function viaProxy(endpoint: string, params: Record<string, string>): Promise<unknown> {
+  const res = await fetch(`/api/neis?${new URLSearchParams({ endpoint, ...params })}`);
+  const body = (await res.json().catch(() => null)) as Record<string, unknown> | null;
+  if (!body) throw new Error(`나이스 정보를 가져오지 못했습니다. (서버 응답 오류 ${res.status})`);
+  if (!res.ok && typeof body.error === 'string') {
+    throw Object.assign(new Error(body.error), { proxyFailed: true, detail: body.detail });
   }
+  return body;
+}
+
+/** 서버 중계가 안 될 때: 사용자의 브라우저(국내 인터넷)에서 나이스로 바로 요청. 인증키는 쓰지 않음 */
+async function direct(endpoint: string, params: Record<string, string>): Promise<unknown> {
+  const u = new URL(`https://open.neis.go.kr/hub/${endpoint}`);
+  u.search = new URLSearchParams({ Type: 'json', pIndex: '1', pSize: '100', ...params }).toString();
+  const res = await fetch(u);
+  return res.json();
+}
+
+async function call(endpoint: string, params: Record<string, string>): Promise<Row[]> {
   let body: unknown;
   try {
-    body = await res.json();
-  } catch {
-    throw new Error('나이스 정보를 가져오지 못했습니다. (서버 응답 오류)');
+    body = directMode ? await direct(endpoint, params) : await viaProxy(endpoint, params);
+  } catch (e) {
+    const err = e as Error & { proxyFailed?: boolean; detail?: string };
+    if (directMode) throw new Error('나이스 정보를 가져오지 못했습니다. 인터넷 연결을 확인해 주세요.');
+    // 서버 중계 실패 → 브라우저에서 직접 시도
+    try {
+      body = await direct(endpoint, params);
+      directMode = true;
+      console.warn('나이스 서버 중계 실패, 직접 연결로 전환:', err.message, err.detail ?? '');
+    } catch {
+      throw new Error(`${err.message}${err.detail ? ` — ${err.detail}` : ''}`);
+    }
   }
   return neisRows(endpoint, body);
 }

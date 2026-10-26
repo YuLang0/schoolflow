@@ -4,7 +4,7 @@ import type { Focus } from '../components/Shell';
 import { Banner, Empty } from '../components/ui';
 import { useMeals } from '../hooks/useMeals';
 import { addDays, formatKoreanDate, toDateStr } from '../lib/date';
-import { ALLERGENS, schoolWeek } from '../lib/neis';
+import { ALLERGENS, isNeisLimited, schoolWeek } from '../lib/neis';
 import type { AppData } from '../lib/types';
 
 export function MealsPage({ data, go }: { data: AppData; go: (f: Focus) => void }) {
@@ -56,6 +56,7 @@ export function MealsPage({ data, go }: { data: AppData; go: (f: Focus) => void 
         {school.name} · 나이스 제공{allergies.length > 0 && ` · ⚠ 내 알레르기: ${allergies.map((n) => ALLERGENS[n - 1]).join(', ')}`}
       </p>
       {error && <Banner kind="error">{error}</Banner>}
+      {meals && isNeisLimited() && <Banner kind="info">서버 연결이 막혀 나이스에 직접 연결했습니다. 이 경우 한 번에 5건까지만 받아 와서 일부 급식이 빠질 수 있습니다.</Banner>}
       {loading && !meals && <div className="splash">급식 정보를 불러오는 중…</div>}
       {meals && (
         <div className="meal-week">

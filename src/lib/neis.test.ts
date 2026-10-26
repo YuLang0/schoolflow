@@ -80,3 +80,24 @@ describe('시간표', () => {
     expect(schoolWeek(new Date(2026, 9, 31))).toEqual({ from: '2026-11-02', to: '2026-11-06' });
   });
 });
+
+describe('서버 중계 실패 시 직접 연결', () => {
+  it('중계가 502면 나이스에 직접 요청하고 이후에도 직접 연결', async () => {
+    const { vi } = await import('vitest');
+    const urls: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (u: string | URL) => {
+      const s = String(u);
+      urls.push(s);
+      if (s.startsWith('/api/neis')) return new Response(JSON.stringify({ error: '나이스 서버 오류 (500)', detail: 'blocked' }), { status: 502 });
+      return new Response(JSON.stringify(ok('schoolInfo', [{ ATPT_OFCDC_SC_CODE: 'J10', SD_SCHUL_CODE: '1', SCHUL_NM: '경기고' }])));
+    }));
+    const { searchSchools, isNeisLimited } = await import('./neis');
+    expect((await searchSchools('경기고'))[0].name).toBe('경기고');
+    expect(isNeisLimited()).toBe(true);
+    expect(urls[1]).toContain('https://open.neis.go.kr/hub/schoolInfo');
+    expect(urls[1]).not.toContain('KEY=');
+    await searchSchools('경기고');
+    expect(urls.filter((u) => u.startsWith('/api/neis'))).toHaveLength(1);
+    vi.unstubAllGlobals();
+  });
+});
