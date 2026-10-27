@@ -46,14 +46,7 @@ export function SettingsPage({
   return (
     <div className="stack settings">
       <ProfileSection user={user} onUserChange={onUserChange} settings={s} save={save} />
-      {user.test ? (
-        <section className="card">
-          <h3>비밀번호 변경</h3>
-          <p className="muted small">테스트 모드에는 계정이 없어 비밀번호가 없습니다.</p>
-        </section>
-      ) : (
-        <PasswordSection user={user} />
-      )}
+      <PasswordSection user={user} />
 
       <section className="card">
         <h3>화면</h3>
@@ -74,11 +67,7 @@ export function SettingsPage({
       <section className="card">
         <h3>계정</h3>
         <p className="muted small">
-          {user.test
-            ? '테스트 모드: 데이터가 이 브라우저에만 저장됩니다.'
-            : authMode === 'cloud'
-              ? '계정 동기화 모드: 데이터가 Supabase 서버에 저장됩니다.'
-              : '로컬 데모 모드: 데이터가 이 브라우저에만 저장됩니다.'}
+          {authMode === 'cloud' ? '계정 동기화 모드: 데이터가 Supabase 서버에 저장됩니다.' : '로컬 데모 모드: 데이터가 이 브라우저에만 저장됩니다.'}
         </p>
         <button
           className="btn ghost"
@@ -87,7 +76,7 @@ export function SettingsPage({
             onSignedOut();
           }}
         >
-          {user.test ? '테스트 끝내기' : '로그아웃'}
+          로그아웃
         </button>
       </section>
       <p className="tiny muted center">SchoolFlow v1.1</p>
@@ -104,7 +93,7 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
     e.preventDefault();
     try {
       if (name.trim() && name.trim() !== user.name) {
-        if (!user.test) await updateName(user, name);
+        await updateName(user, name);
         onUserChange({ ...user, name: name.trim() });
       }
       save({ schoolName: FIXED_SCHOOL_NAME, gradeNo, classNo: classNo.trim() });

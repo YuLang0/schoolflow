@@ -11,24 +11,7 @@ export function toAppUser(u: User): AppUser {
   return { id: u.id, email: u.email ?? '', name: typeof meta.name === 'string' ? meta.name : '' };
 }
 
-// 테스트 모드: 계정 없이 앱을 둘러보는 용도. 탭을 닫으면 끝나고, 입력한 내용은 이 브라우저에만 남습니다.
-const TEST_KEY = 'sf:testmode';
-export const TEST_USER: AppUser = { id: 'test-mode', email: 'test@schoolflow.local', name: '테스트', test: true };
-
-export function enterTestMode(): AppUser {
-  sessionStorage.setItem(TEST_KEY, '1');
-  return TEST_USER;
-}
-
-/** 테스트 모드에서 입력한 내용 지우기 */
-export function clearTestData() {
-  for (const k of Object.keys(localStorage)) {
-    if (k === `sf:data:${TEST_USER.email}` || k.startsWith(`sf:notified:${TEST_USER.id}`)) localStorage.removeItem(k);
-  }
-}
-
 export async function getCurrentUser(): Promise<AppUser | null> {
-  if (sessionStorage.getItem(TEST_KEY)) return TEST_USER;
   if (!supabase) return localAuth.current();
   const { data } = await supabase.auth.getSession();
   return data.session ? toAppUser(data.session.user) : null;
@@ -59,7 +42,6 @@ export async function signUp(email: string, password: string, name: string): Pro
 
 export async function signOut() {
   sessionStorage.removeItem('sf:view'); // 다음 로그인은 홈 화면부터
-  if (sessionStorage.getItem(TEST_KEY)) return sessionStorage.removeItem(TEST_KEY);
   if (!supabase) return localAuth.signOut();
   await supabase.auth.signOut();
 }
