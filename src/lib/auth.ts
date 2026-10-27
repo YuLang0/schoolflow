@@ -15,33 +15,16 @@ export function toAppUser(u: User): AppUser {
 const TEST_KEY = 'sf:testmode';
 export const TEST_USER: AppUser = { id: 'test-mode', email: 'test@schoolflow.local', name: '테스트', test: true };
 
-/** 테스트 모드는 2학년 3반으로 시작해 바로 시간표가 채워지게 합니다 (학년·반을 안 정했을 때만) */
-function seedTestClass() {
-  const key = `sf:data:${TEST_USER.email}`;
-  let raw: { settings?: Record<string, unknown> } & Record<string, unknown> = {};
-  try {
-    raw = JSON.parse(localStorage.getItem(key) || '{}') ?? {};
-  } catch {
-    raw = {};
-  }
-  if (raw.settings?.gradeNo && raw.settings?.classNo) return;
-  raw.settings = { ...(raw.settings ?? {}), gradeNo: '2', classNo: '3' };
-  localStorage.setItem(key, JSON.stringify(raw));
-}
-
 export function enterTestMode(): AppUser {
   sessionStorage.setItem(TEST_KEY, '1');
-  seedTestClass();
   return TEST_USER;
 }
 
-/** 테스트 모드에서 입력한 내용 지우기 (2학년 3반 설정은 다시 채움) */
+/** 테스트 모드에서 입력한 내용 지우기 */
 export function clearTestData() {
   for (const k of Object.keys(localStorage)) {
     if (k === `sf:data:${TEST_USER.email}` || k.startsWith(`sf:notified:${TEST_USER.id}`)) localStorage.removeItem(k);
   }
-  for (const k of Object.keys(sessionStorage)) if (k.startsWith(`sf:ttsync:${TEST_USER.id}`)) sessionStorage.removeItem(k);
-  seedTestClass();
 }
 
 export async function getCurrentUser(): Promise<AppUser | null> {

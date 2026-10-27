@@ -111,25 +111,3 @@ describe('교시 시간 고정', () => {
     expect(s.periodTimes.map((p) => p.start)).toEqual(['09:10', '10:10', '11:10', '12:10', '13:50', '14:50', '15:50']);
   });
 });
-
-describe('테스트 모드', () => {
-  beforeEach(() => {
-    localStorage.clear();
-    sessionStorage.clear();
-  });
-  it('처음 들어가면 2학년 3반, 직접 바꾼 반은 유지, 지우면 다시 2학년 3반', async () => {
-    const { enterTestMode, clearTestData, getCurrentUser, signOut } = await import('./auth');
-    const u = enterTestMode();
-    expect((await getCurrentUser())?.test).toBe(true);
-    expect((await new LocalStore(u.email).load()).settings).toMatchObject({ gradeNo: '2', classNo: '3' });
-    const store = new LocalStore(u.email);
-    const d = await store.load();
-    await store.put('settings', { ...d.settings, gradeNo: '1', classNo: '5' });
-    enterTestMode();
-    expect((await store.load()).settings).toMatchObject({ gradeNo: '1', classNo: '5' });
-    clearTestData();
-    expect((await store.load()).settings).toMatchObject({ gradeNo: '2', classNo: '3' });
-    await signOut();
-    expect(await getCurrentUser()).toBeNull();
-  });
-});
