@@ -1,4 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { sanitizeGradeCalc } from './gradeCalc';
 import { defaultSettings, emptyData, type AppData, type Collection, type ListCollection, type Settings } from './types';
 
 export interface DataStore {
@@ -13,7 +14,7 @@ const LISTS: ListCollection[] = ['timetable', 'assignments', 'exams', 'events', 
 function mergeSettings(s: Partial<Settings> | undefined): Settings {
   const base = defaultSettings();
   // 교시 시간은 학교 고정값을 쓰므로 예전에 저장된 값은 무시합니다.
-  return { ...base, ...(s ?? {}), id: 'settings', periodTimes: base.periodTimes };
+  return { ...base, ...(s ?? {}), id: 'settings', periodTimes: base.periodTimes, gradeCalc: sanitizeGradeCalc(s?.gradeCalc) };
 }
 
 /** 로컬 데모 모드: 계정(이메일)별로 localStorage에 저장 */

@@ -312,3 +312,36 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .changed-badge { margin-left: 6px; }
 .tt thead th { vertical-align: bottom; }
 .tt thead th .today-badge { display: table; margin: 0 auto 4px; }
+
+/* 학사일정 */
+.dot-s { background: #e0457b; }
+.badge.school { background: #fde7ef; color: #c2185b; }
+.badge.red { background: var(--danger-soft); color: var(--danger); }
+:root[data-theme='dark'] .badge.school { background: #3a1626; color: #ff8fb5; }
+.cal-day.red > span:first-child { color: var(--danger); }
+.cal-day.sat > span:first-child { color: #3b82f6; }
+.cal-day.sel > span:first-child { color: #fff; }
+.cal-event { font-size: 0.62rem; line-height: 1.1; max-width: 100%; padding: 0 3px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: #c2185b; font-weight: 600; }
+.cal-event.exam { color: var(--warn); }
+.cal-day.sel .cal-event { color: #fff; }
+.stats span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 720px) { .cal-event { display: none; } }
+
+/* 내신 계산기 */
+.page-tabs { align-self: flex-start; }
+.term-chips { margin-bottom: 12px; }
+.chip.on-primary { background: var(--primary); border-color: var(--primary); color: #fff; font-weight: 700; }
+.grade-table { width: 100%; border-collapse: separate; border-spacing: 0 6px; }
+.grade-table th { font-size: 0.8rem; color: var(--muted); text-align: left; padding: 0 4px; }
+.grade-table td { padding: 0 4px; }
+.grade-table td:nth-child(2) { width: 84px; }
+.grade-table td:nth-child(3) { width: 110px; }
+.grade-table td:nth-child(4) { width: 44px; }
+.rank-result { font-size: 1.1rem; margin: 4px 0 0; }
+.rank-result strong { color: var(--primary); }
+
+/* 시간표 이미지 */
+.modal:has(.tt-image-preview) { max-width: 760px; }
+.tt-image-preview { margin-top: 12px; display: flex; justify-content: center; background: var(--card-2); border-radius: 12px; padding: 10px; }
+.tt-image-preview canvas { width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow); }
+.tt-image-preview.portrait canvas { width: auto; max-height: 56vh; max-width: 100%; }

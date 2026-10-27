@@ -22,7 +22,7 @@ export function AssignmentsPage({ data, api, focusId }: { data: AppData; api: Da
 
   const exportCSV = () =>
     downloadText(
-      `schoolflow-과제-${today}.csv`,
+      `schoolflow-assignments-${today}.csv`,
       toCSV(
         ['과목', '제목', '마감일', '중요도', '완료', '완료일', '메모'],
         data.assignments.map((a) => [a.subject, a.title, a.due, PRIORITY[a.priority], a.done ? 'O' : '', a.doneAt ?? '', a.memo]),

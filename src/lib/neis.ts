@@ -197,3 +197,68 @@ export function schoolWeek(now: Date): { from: string; to: string } {
   const monday = wd >= 5 ? addDays(today, 7 - wd) : addDays(today, -wd);
   return { from: monday, to: addDays(monday, 4) };
 }
+
+export interface SchoolEvent {
+  date: string; // YYYY-MM-DD
+  name: string;
+  detail: string;
+  holiday: boolean; // 휴업일
+  exam: boolean; // 시험 관련 일정
+}
+
+const isFlag = (v: string | undefined) => v === 'Y';
+
+/** 학사일정 row 변환. 내 학년 대상이 아닌 일정과 매주 반복되는 토요휴업일은 뺍니다. */
+export function toSchoolEvents(rows: Row[], gradeNo: string): SchoolEvent[] {
+  const flagKeys = ['ONE_GRADE_EVENT_YN', 'TW_GRADE_EVENT_YN', 'THREE_GRADE_EVENT_YN'];
+  return rows
+    .filter((r) => r.EVENT_NM && r.EVENT_NM.trim() !== '토요휴업일')
+    .filter((r) => {
+      const flags = flagKeys.map((k) => r[k]);
+      const g = Number(gradeNo);
+      // 학년 표시가 하나도 없으면 전체 학년 일정으로 봄
+      if (!g || !flags.some(isFlag)) return true;
+      return isFlag(flags[g - 1]);
+    })
+    .map((r) => {
+      const name = r.EVENT_NM.trim();
+      return {
+        date: fromYmd(r.AA_YMD),
+        name,
+        detail: (r.EVENT_CNTNT ?? '').trim(),
+        holiday: (r.SBTR_DD_SC_NM ?? '').includes('휴업') || /방학|공휴일|대체/.test(name),
+        exam: /고사|시험|평가/.test(name) && !/수행/.test(name),
+      };
+    })
+    .sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function fetchSchoolEvents(
+  school: Pick<NeisSchool, 'officeCode' | 'schoolCode'>,
+  gradeNo: string,
+  from: string,
+  to: string,
+): Promise<SchoolEvent[]> {
+  const rows = await call('SchoolSchedule', {
+    ATPT_OFCDC_SC_CODE: school.officeCode,
+    SD_SCHUL_CODE: school.schoolCode,
+    AA_FROM_YMD: ymd(from),
+    AA_TO_YMD: ymd(to),
+  });
+  return toSchoolEvents(rows, gradeNo);
+}
+
+/** 여러 날 이어지는 같은 일정(예: 기말고사 4일)을 하나로 묶어 시작일·마지막일로 */
+export function groupEvents(events: SchoolEvent[]): { name: string; from: string; to: string; exam: boolean; holiday: boolean }[] {
+  const out: { name: string; from: string; to: string; exam: boolean; holiday: boolean }[] = [];
+  for (const e of events) {
+    const last = out.at(-1);
+    if (last && last.name === e.name && diffDaysLoose(last.to, e.date) <= 3) last.to = e.date;
+    else out.push({ name: e.name, from: e.date, to: e.date, exam: e.exam, holiday: e.holiday });
+  }
+  return out;
+}
+
+function diffDaysLoose(a: string, b: string): number {
+  return Math.round((Date.parse(b) - Date.parse(a)) / 86400000);
+}

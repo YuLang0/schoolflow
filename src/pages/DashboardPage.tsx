@@ -3,8 +3,10 @@ import { MealCard } from '../components/MealCard';
 import { Empty } from '../components/ui';
 import { useMeals } from '../hooks/useMeals';
 import { useSchool } from '../hooks/useSchool';
+import { useSchoolEvents } from '../hooks/useSchoolEvents';
+import { groupEvents } from '../lib/neis';
 import type { DataApi } from '../hooks/useAppData';
-import { ddayLabel, diffDays, formatKoreanDate, toDateStr } from '../lib/date';
+import { addDays, ddayLabel, diffDays, formatKoreanDate, toDateStr } from '../lib/date';
 import { classStatus, todayClasses } from '../lib/schedule';
 import type { AppData, AppUser } from '../lib/types';
 
@@ -49,6 +51,15 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
   const { school } = useSchool();
   const meals = useMeals(school, today, today);
   const lunch = meals.meals?.find((m) => m.type === '중식') ?? meals.meals?.[0];
+  // 학사일정은 앞으로 60일
+  const schoolEvents = useSchoolEvents(data.settings.gradeNo, today, addDays(today, 60));
+  const upcoming = groupEvents(schoolEvents.events ?? []).slice(0, 5);
+  const schoolExam = groupEvents(schoolEvents.events ?? []).find((g) => g.exam);
+  // 다음 시험: 내가 적은 시험과 학교 시험 기간 중 더 가까운 것
+  const nextExam = [
+    ...(exams[0] ? [{ date: exams[0].date, name: exams[0].title }] : []),
+    ...(schoolExam ? [{ date: schoolExam.from, name: schoolExam.name }] : []),
+  ].sort((a, b) => a.date.localeCompare(b.date))[0];
 
   return (
     <div className="stack">
@@ -62,8 +73,8 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
             <span>남은 과제</span>
           </div>
           <div>
-            <strong>{exams[0] ? ddayLabel(today, exams[0].date) : '-'}</strong>
-            <span>다음 시험</span>
+            <strong>{nextExam ? ddayLabel(today, nextExam.date) : '-'}</strong>
+            <span>{nextExam ? `다음 시험 · ${nextExam.name}` : '다음 시험'}</span>
           </div>
           <div>
             <strong>{classes.length}</strong>
@@ -149,6 +160,35 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
                     {e.title}
                   </button>
                   <span className="muted small">{e.date.slice(5)}</span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section className="card">
+          <div className="card-head">
+            <h3>학사일정</h3>
+            <button className="link" onClick={() => go({ view: 'calendar' })}>
+              달력
+            </button>
+          </div>
+          {schoolEvents.error ? (
+            <Empty>{schoolEvents.error}</Empty>
+          ) : !schoolEvents.events ? (
+            <Empty>불러오는 중…</Empty>
+          ) : upcoming.length === 0 ? (
+            <Empty>앞으로 60일 동안 학사일정이 없습니다.</Empty>
+          ) : (
+            <ul className="list">
+              {upcoming.map((g) => (
+                <li key={g.from + g.name}>
+                  <span className={`dday ${g.exam ? 'soon' : ''}`}>{ddayLabel(today, g.from)}</span>
+                  <span className="grow">{g.name}</span>
+                  <span className="muted small">
+                    {g.from.slice(5).replace('-', '/')}
+                    {g.to !== g.from && `~${g.to.slice(5).replace('-', '/')}`}
+                  </span>
                 </li>
               ))}
             </ul>

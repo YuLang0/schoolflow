@@ -2,6 +2,7 @@ import { useState, type FormEvent } from 'react';
 import type { Focus } from '../components/Shell';
 import { Empty, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
+import { useSchoolEvents } from '../hooks/useSchoolEvents';
 import { formatKoreanDate, monthGrid, parseDateStr, toDateStr } from '../lib/date';
 import { newId, type AppData, type CalEvent } from '../lib/types';
 
@@ -15,12 +16,14 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
   const [edit, setEdit] = useState<CalEvent | null>(null);
 
   const days = monthGrid(cursor.y, cursor.m);
+  const school = useSchoolEvents(data.settings.gradeNo, days[0], days[days.length - 1]);
   const move = (n: number) => setCursor(({ y, m }) => ({ y: m + n < 0 ? y - 1 : m + n > 11 ? y + 1 : y, m: (m + n + 12) % 12 }));
 
   const itemsOn = (d: string) => ({
     a: data.assignments.filter((x) => x.due === d),
     e: data.exams.filter((x) => x.date === d),
     v: data.events.filter((x) => x.date === d),
+    s: school.events?.filter((x) => x.date === d) ?? [],
   });
   const sel = itemsOn(selected);
 
@@ -57,25 +60,30 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
           {days.map((d) => {
             const it = itemsOn(d);
             const other = parseDateStr(d).getMonth() !== cursor.m;
+            const dow = parseDateStr(d).getDay();
+            const red = dow === 0 || it.s.some((x) => x.holiday);
             return (
               <button
                 key={d}
-                className={`cal-day ${other ? 'other' : ''} ${d === today ? 'today' : ''} ${d === selected ? 'sel' : ''}`}
+                className={`cal-day ${other ? 'other' : ''} ${d === today ? 'today' : ''} ${d === selected ? 'sel' : ''} ${red ? 'red' : ''} ${dow === 6 ? 'sat' : ''}`}
                 onClick={() => setSelected(d)}
-                aria-label={`${formatKoreanDate(d)} 과제 ${it.a.length}개, 시험 ${it.e.length}개, 일정 ${it.v.length}개`}
+                aria-label={`${formatKoreanDate(d)} 과제 ${it.a.length}개, 시험 ${it.e.length}개, 일정 ${it.v.length}개${it.s.length ? `, 학사일정 ${it.s.map((x) => x.name).join(', ')}` : ''}`}
               >
                 <span>{parseDateStr(d).getDate()}</span>
+                {it.s[0] && <span className={`cal-event ${it.s[0].exam ? 'exam' : ''}`}>{it.s[0].name}</span>}
                 <span className="dots">
                   {it.a.length > 0 && <i className="dot-a" />}
                   {it.e.length > 0 && <i className="dot-e" />}
                   {it.v.length > 0 && <i className="dot-v" />}
+                  {it.s.length > 0 && <i className="dot-s" />}
                 </span>
               </button>
             );
           })}
         </div>
+        {school.error && <p className="warn">학사일정을 불러오지 못했습니다: {school.error}</p>}
         <p className="legend small muted">
-          <i className="dot-a" /> 과제 마감 <i className="dot-e" /> 시험 <i className="dot-v" /> 일정
+          <i className="dot-a" /> 과제 마감 <i className="dot-e" /> 시험 <i className="dot-v" /> 일정 <i className="dot-s" /> 학사일정
         </p>
       </div>
 
@@ -86,10 +94,19 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
             + 일정
           </button>
         </div>
-        {sel.a.length + sel.e.length + sel.v.length === 0 ? (
+        {sel.a.length + sel.e.length + sel.v.length + sel.s.length === 0 ? (
           <Empty>이 날은 등록된 항목이 없습니다.</Empty>
         ) : (
           <ul className="list">
+            {sel.s.map((x, i) => (
+              <li key={`s${i}`}>
+                <span className={`badge ${x.exam ? 'warn' : x.holiday ? 'red' : 'school'}`}>{x.exam ? '시험' : x.holiday ? '휴일' : '학사'}</span>
+                <span className="grow">
+                  {x.name}
+                  {x.detail && <small className="muted block">{x.detail}</small>}
+                </span>
+              </li>
+            ))}
             {sel.v.map((v) => (
               <li key={v.id}>
                 <span className="badge">일정</span>

@@ -7,6 +7,7 @@ const ENDPOINTS = {
   classInfo: ['ATPT_OFCDC_SC_CODE', 'SD_SCHUL_CODE', 'AY', 'GRADE'],
   hisTimetable: ['ATPT_OFCDC_SC_CODE', 'SD_SCHUL_CODE', 'AY', 'SEM', 'GRADE', 'CLASS_NM', 'TI_FROM_YMD', 'TI_TO_YMD'],
   mealServiceDietInfo: ['ATPT_OFCDC_SC_CODE', 'SD_SCHUL_CODE', 'MLSV_YMD', 'MLSV_FROM_YMD', 'MLSV_TO_YMD'],
+  SchoolSchedule: ['ATPT_OFCDC_SC_CODE', 'SD_SCHUL_CODE', 'AA_YMD', 'AA_FROM_YMD', 'AA_TO_YMD'],
 };
 
 const json = (body, status = 200, extra = {}) =>
@@ -43,7 +44,7 @@ export default async function handler(req, _context, env) {
       return json({ error: `나이스 서버 오류 (${res.status})`, upstream: res.status, detail: text.replace(/\s+/g, ' ').slice(0, 120) }, 502);
     }
     // 학교 검색은 자주 바뀌지 않고, 급식·시간표도 짧게 캐시해 나이스 호출 수를 줄입니다.
-    const maxAge = endpoint === 'schoolInfo' || endpoint === 'classInfo' ? 86400 : 1800;
+    const maxAge = endpoint === 'schoolInfo' || endpoint === 'classInfo' ? 86400 : endpoint === 'SchoolSchedule' ? 21600 : 1800;
     return new Response(text, {
       status: 200,
       headers: { 'content-type': 'application/json; charset=utf-8', 'cache-control': `public, max-age=${maxAge}` },

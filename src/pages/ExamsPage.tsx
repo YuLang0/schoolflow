@@ -1,12 +1,39 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type ReactNode } from 'react';
 import { Empty, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
 import { toCSV } from '../lib/csv';
 import { ddayLabel, formatKoreanDate, toDateStr } from '../lib/date';
 import { downloadText } from '../lib/download';
 import { newId, type AppData, type Exam } from '../lib/types';
+import { GradeCalcPanel } from './GradeCalcPanel';
 
 export function ExamsPage({ data, api, focusId }: { data: AppData; api: DataApi; focusId?: string }) {
+  const [tab, setTab] = useState<'exams' | 'calc'>(() => (sessionStorage.getItem('sf:examTab') === 'calc' && !focusId ? 'calc' : 'exams'));
+  const pick = (t: 'exams' | 'calc') => {
+    setTab(t);
+    sessionStorage.setItem('sf:examTab', t);
+  };
+  const tabs = (
+    <div className="seg page-tabs">
+      <button className={tab === 'exams' ? 'on' : ''} onClick={() => pick('exams')}>
+        시험 일정
+      </button>
+      <button className={tab === 'calc' ? 'on' : ''} onClick={() => pick('calc')}>
+        내신 계산기
+      </button>
+    </div>
+  );
+  if (tab === 'calc')
+    return (
+      <div className="stack">
+        {tabs}
+        <GradeCalcPanel data={data} api={api} />
+      </div>
+    );
+  return <ExamList data={data} api={api} focusId={focusId} tabs={tabs} />;
+}
+
+function ExamList({ data, api, focusId, tabs }: { data: AppData; api: DataApi; focusId?: string; tabs: ReactNode }) {
   const [edit, setEdit] = useState<Exam | null>(() => data.exams.find((e) => e.id === focusId) ?? null);
   const today = toDateStr(new Date());
   const upcoming = data.exams.filter((e) => e.date >= today).sort((a, b) => (a.date + a.time).localeCompare(b.date + b.time));
@@ -16,7 +43,7 @@ export function ExamsPage({ data, api, focusId }: { data: AppData; api: DataApi;
 
   const exportCSV = () =>
     downloadText(
-      `schoolflow-시험-${today}.csv`,
+      `schoolflow-exams-${today}.csv`,
       toCSV(
         ['과목', '시험명', '날짜', '시간', '범위', '점수', '메모'],
         [...data.exams].sort((a, b) => a.date.localeCompare(b.date)).map((e) => [e.subject, e.title, e.date, e.time, e.scope, e.score ?? '', e.memo]),
@@ -41,6 +68,7 @@ export function ExamsPage({ data, api, focusId }: { data: AppData; api: DataApi;
 
   return (
     <div className="stack">
+      {tabs}
       <div className="toolbar">
         <span className="muted">{avg !== null ? `지난 시험 평균 ${avg.toFixed(1)}점 (${scored.length}개)` : '시험이 끝나면 점수를 기록해 보세요.'}</span>
         <span className="grow" />

@@ -1,4 +1,5 @@
 import { Fragment, useState, type FormEvent } from 'react';
+import { TimetableImageModal } from '../components/TimetableImageModal';
 import { Banner, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
 import { useSchool } from '../hooks/useSchool';
@@ -15,6 +16,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
   const periods = data.settings.periodTimes;
 
   const [busy, setBusy] = useState(false);
+  const [imageOpen, setImageOpen] = useState(false);
   const [msg, setMsg] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
   const { gradeNo, classNo } = data.settings;
   const { school } = useSchool();
@@ -42,6 +44,9 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
     <div className="stack">
       <div className="toolbar">
         <p className="muted grow">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
+        <button className="btn ghost" onClick={() => setImageOpen(true)} disabled={data.timetable.length === 0}>
+          이미지로 저장
+        </button>
         <button className="btn ghost" onClick={() => void importNeis()} disabled={busy || !ready} title={ready ? '' : '설정에서 학년·반을 먼저 정해 주세요'}>
           {busy ? '가져오는 중…' : '지금 다시 가져오기'}
         </button>
@@ -128,6 +133,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
           </button>
         </div>
       )}
+      {imageOpen && <TimetableImageModal data={data} onClose={() => setImageOpen(false)} />}
       {edit && <EntryModal entry={edit} exists={data.timetable.some((x) => x.id === edit.id)} api={api} onClose={() => setEdit(null)} />}
     </div>
   );

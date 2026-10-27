@@ -308,7 +308,7 @@ function DataSection({ data, api }: { data: AppData; api: DataApi }) {
 
   const exportTimetable = () =>
     downloadText(
-      `schoolflow-시간표-${today}.csv`,
+      `schoolflow-timetable-${today}.csv`,
       toCSV(
         ['교시', ...DAY_NAMES],
         data.settings.periodTimes.map((p, i) => [`${i + 1}교시 (${p.start}~${p.end})`, ...DAY_NAMES.map((_, d) => data.timetable.find((e) => e.day === d && e.period === i + 1)?.subject ?? '')]),

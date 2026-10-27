@@ -1,4 +1,5 @@
 import { isDateStr, toDateStr } from './date';
+import { sanitizeGradeCalc } from './gradeCalc';
 import { defaultSettings, type AppData, type Priority } from './types';
 
 export const BACKUP_APP = 'schoolflow';
@@ -101,6 +102,7 @@ export function parseBackup(text: string): AppData {
     gradeNo: str(s.gradeNo, 5),
     ttSyncWeek: isDateStr(s.ttSyncWeek) ? (s.ttSyncWeek as string) : '',
     ttSyncClass: str(s.ttSyncClass, 20),
+    gradeCalc: sanitizeGradeCalc(s.gradeCalc),
     classNo: str(s.classNo, 10),
     allergies: Array.isArray(s.allergies)
       ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)
