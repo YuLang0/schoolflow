@@ -37,6 +37,8 @@ const NAV: { view: View; label: string; icon: string }[] = [
 ];
 
 const VIEW_KEY = 'sf:view';
+/** 휴대폰 하단 메뉴에 바로 보이는 화면 (나머지는 더보기) */
+const TABS: View[] = ['dashboard', 'timetable', 'meals', 'assignments'];
 
 export function Shell({
   user,
@@ -55,6 +57,7 @@ export function Shell({
     return { view: saved && NAV.some((n) => n.view === saved) ? saved : 'dashboard' };
   });
   const [notice, setNotice] = useState(initialNotice);
+  const [moreOpen, setMoreOpen] = useState(false);
   useReminders(user, api.data);
 
   useEffect(() => {
@@ -110,7 +113,7 @@ export function Shell({
             <button className="icon-btn mobile-only" onClick={() => go({ view: 'search' })} aria-label="검색">
               🔍
             </button>
-            <span className="muted small">{user.name || user.email}</span>
+            <span className="muted small desktop-only">{user.name || user.email}</span>
           </div>
         </header>
         {notice && (
@@ -144,13 +147,47 @@ export function Shell({
       </main>
 
       <nav className="bottombar" aria-label="하단 메뉴">
-        {NAV.filter((n) => n.view !== 'search').map((n) => (
-          <button key={n.view} className={focus.view === n.view ? 'on' : ''} onClick={() => go({ view: n.view })} aria-label={n.label}>
-            <span aria-hidden>{n.icon}</span>
-            <small>{n.label}</small>
-          </button>
-        ))}
+        {TABS.map((v) => {
+          const n = NAV.find((x) => x.view === v)!;
+          return (
+            <button key={v} className={focus.view === v && !moreOpen ? 'on' : ''} onClick={() => (setMoreOpen(false), go({ view: v }))} aria-label={n.label} aria-current={focus.view === v ? 'page' : undefined}>
+              <span aria-hidden>{n.icon}</span>
+              <small>{n.label}</small>
+            </button>
+          );
+        })}
+        <button className={moreOpen || !TABS.includes(focus.view) ? 'on' : ''} onClick={() => setMoreOpen((o) => !o)} aria-label="더보기" aria-expanded={moreOpen}>
+          <span aria-hidden>☰</span>
+          <small>{TABS.includes(focus.view) ? '더보기' : NAV.find((x) => x.view === focus.view)?.label}</small>
+        </button>
       </nav>
+
+      {moreOpen && (
+        <div className="more-backdrop" onClick={() => setMoreOpen(false)}>
+          <div className="more-sheet" role="dialog" aria-label="더보기 메뉴" onClick={(e) => e.stopPropagation()}>
+            <div className="sheet-handle" aria-hidden />
+            <div className="more-user">
+              <strong>{user.name || '학생'}</strong>
+              <span className="muted small">{user.email}</span>
+            </div>
+            <div className="more-grid">
+              {NAV.filter((n) => !TABS.includes(n.view)).map((n) => (
+                <button
+                  key={n.view}
+                  className={focus.view === n.view ? 'on' : ''}
+                  onClick={() => {
+                    setMoreOpen(false);
+                    go({ view: n.view });
+                  }}
+                >
+                  <span aria-hidden>{n.icon}</span>
+                  <small>{n.label}</small>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

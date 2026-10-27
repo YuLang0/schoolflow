@@ -345,3 +345,124 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .tt-image-preview { margin-top: 12px; display: flex; justify-content: center; background: var(--card-2); border-radius: 12px; padding: 10px; }
 .tt-image-preview canvas { width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow); }
 .tt-image-preview.portrait canvas { width: auto; max-height: 56vh; max-width: 100%; }
+
+/* ───────── 휴대폰 화면 ───────── */
+.desktop-only { }
+.more-backdrop, .day-tabs, .day-list { display: none; }
+.stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.stats div { min-width: 0; }
+
+@media (max-width: 720px) {
+  .desktop-only { display: none !important; }
+  body { background: var(--bg); }
+  .content { padding: 0 14px calc(92px + env(safe-area-inset-bottom)); }
+
+  /* 위쪽 제목 줄: 스크롤해도 고정 */
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    margin: 0 -14px 12px;
+    padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+    background: color-mix(in srgb, var(--bg) 85%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+  }
+  .topbar h1 { font-size: 1.25rem; }
+  .stack { gap: 12px; }
+  .card { padding: 14px; border-radius: 16px; }
+  h3 { font-size: 0.98rem; }
+  .toolbar { gap: 6px; }
+
+  /* 하단 메뉴: 5칸 */
+  .bottombar {
+    grid-template-columns: repeat(5, 1fr);
+    padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+    background: color-mix(in srgb, var(--card) 92%, transparent);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 0 -4px 20px rgb(0 0 0 / 6%);
+  }
+  .bottombar button { min-height: 54px; gap: 2px; font-size: 1.25rem; }
+  .bottombar button small { font-size: 0.7rem; }
+
+  /* 더보기 시트 */
+  .more-backdrop { display: block; position: fixed; inset: 0; background: rgb(5 8 20 / 45%); z-index: 50; animation: fade 0.15s ease-out; }
+  .more-sheet {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--card);
+    border-radius: 20px 20px 0 0;
+    padding: 10px 16px calc(20px + env(safe-area-inset-bottom));
+    box-shadow: 0 -8px 30px rgb(0 0 0 / 15%);
+    animation: up 0.2s ease-out;
+  }
+  .sheet-handle { width: 40px; height: 4px; border-radius: 4px; background: var(--line); margin: 0 auto 12px; }
+  .more-user { display: flex; flex-direction: column; padding: 4px 4px 12px; border-bottom: 1px solid var(--line); margin-bottom: 12px; }
+  .more-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .more-grid button { border: 1px solid var(--line); background: var(--card-2); border-radius: 16px; padding: 16px 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 1.5rem; cursor: pointer; }
+  .more-grid button small { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+  .more-grid button.on { border-color: var(--primary); background: var(--primary-soft); }
+
+  /* 요일 탭 (시간표·급식) */
+  .day-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+  .day-tabs button {
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 14px;
+    padding: 8px 0 6px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1px;
+    min-height: 52px;
+  }
+  .day-tabs button small { font-size: 0.68rem; font-weight: 600; color: var(--muted); }
+  .day-tabs button.on { background: var(--primary); border-color: var(--primary); color: #fff; }
+  .day-tabs button.on small { color: #e6e0ff; }
+
+  /* 하루 시간표 목록 */
+  .day-list { display: block; list-style: none; margin: 0; padding: 6px; }
+  .day-list li + li { border-top: 1px solid var(--line); }
+  .day-list li button { width: 100%; display: flex; align-items: center; gap: 14px; padding: 12px 8px; background: none; border: 0; text-align: left; cursor: pointer; border-radius: 12px; }
+  .day-list .per { display: flex; flex-direction: column; width: 82px; flex: none; }
+  .day-list .per strong { font-size: 0.95rem; }
+  .day-list .per small { font-size: 0.72rem; color: var(--muted); }
+  .day-list .subj { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: 1.05rem; font-weight: 700; }
+  .day-list .subj small { font-size: 0.75rem; font-weight: 500; }
+  .day-list li.now button { background: var(--primary-soft); box-shadow: inset 3px 0 0 var(--primary); }
+  .day-list li.changed button { background: var(--warn-soft); }
+  .day-list li.changed .subj { color: var(--warn); }
+  .day-list .was { color: var(--warn); text-decoration: line-through; }
+  .day-lunch { text-align: center; padding: 10px; font-size: 0.85rem; font-weight: 700; color: var(--warn); background: var(--warn-soft); border-radius: 12px; margin: 4px 0; border-top: 0 !important; }
+  .day-lunch + li { border-top: 0 !important; }
+
+  /* 급식 하루 보기 */
+  .meal-one .dishes { font-size: 1.05rem; line-height: 2; }
+
+  /* 홈: 상단 숫자 칸 */
+  .hero h2 { font-size: 1.15rem; }
+  .stats { gap: 8px; }
+  .stats div { padding: 10px; }
+  .stats strong { font-size: 1.05rem; }
+  .stats span { font-size: 0.72rem; }
+
+  /* 표 시간표(주간)는 가로로 밀어서 보기 */
+  .tt { min-width: 560px; }
+  .tt-wrap { padding: 6px; }
+
+  /* 버튼·입력 */
+  .btn { padding: 10px 14px; }
+  .actions { flex-wrap: wrap; }
+  .modal { padding: 16px 16px calc(20px + env(safe-area-inset-bottom)); }
+}
+
+@keyframes up { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+.stats em { font-style: normal; font-size: 0.72rem; color: var(--warn); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

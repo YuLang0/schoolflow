@@ -2,6 +2,7 @@ import { Fragment, useState, type FormEvent } from 'react';
 import { TimetableImageModal } from '../components/TimetableImageModal';
 import { Banner, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
+import { useIsMobile } from '../hooks/useIsMobile';
 import { useSchool } from '../hooks/useSchool';
 import { weekdayIndex } from '../lib/date';
 import { classStatus, entryAt } from '../lib/schedule';
@@ -17,6 +18,18 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
 
   const [busy, setBusy] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
+  const mobile = useIsMobile();
+  // 휴대폰에서는 하루씩 보는 게 기본. 주간 표로 바꾸면 기억해 둠
+  const [mode, setMode] = useState<'day' | 'week'>(() => (localStorage.getItem('sf:ttMode') === 'week' ? 'week' : 'day'));
+  const [selDay, setSelDay] = useState(() => (today <= 4 ? today : 0));
+  const pickMode = (m: 'day' | 'week') => {
+    setMode(m);
+    try {
+      localStorage.setItem('sf:ttMode', m);
+    } catch {
+      /* 저장 실패는 무시 */
+    }
+  };
   const [msg, setMsg] = useState<{ kind: 'error' | 'success' | 'info'; text: string } | null>(null);
   const { gradeNo, classNo } = data.settings;
   const { school } = useSchool();
@@ -43,12 +56,30 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
   return (
     <div className="stack">
       <div className="toolbar">
-        <p className="muted grow">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
-        <button className="btn ghost" onClick={() => setImageOpen(true)} disabled={data.timetable.length === 0}>
-          이미지로 저장
+        {mobile ? (
+          <div className="seg">
+            <button className={mode === 'day' ? 'on' : ''} onClick={() => pickMode('day')}>
+              하루
+            </button>
+            <button className={mode === 'week' ? 'on' : ''} onClick={() => pickMode('week')}>
+              주간
+            </button>
+          </div>
+        ) : (
+          <p className="muted">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
+        )}
+        <span className="grow" />
+        <button className={`btn ghost ${mobile ? 'small' : ''}`} onClick={() => setImageOpen(true)} disabled={data.timetable.length === 0}>
+          {mobile ? '🖼️ 이미지' : '이미지로 저장'}
         </button>
-        <button className="btn ghost" onClick={() => void importNeis()} disabled={busy || !ready} title={ready ? '' : '설정에서 학년·반을 먼저 정해 주세요'}>
-          {busy ? '가져오는 중…' : '지금 다시 가져오기'}
+        <button
+          className={`btn ghost ${mobile ? 'small' : ''}`}
+          onClick={() => void importNeis()}
+          disabled={busy || !ready}
+          title={ready ? '' : '설정에서 학년·반을 먼저 정해 주세요'}
+          aria-label="나이스에서 지금 다시 가져오기"
+        >
+          {busy ? '가져오는 중…' : mobile ? '🔄 새로고침' : '지금 다시 가져오기'}
         </button>
       </div>
       {!ready && <p className="hint">나이스 시간표를 가져오려면 설정 → 내 정보에서 학년·반을 정해 주세요.</p>}
@@ -57,6 +88,49 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
           {msg.text}
         </Banner>
       )}
+      {mobile && mode === 'day' ? (
+        <>
+          <div className="day-tabs" role="tablist" aria-label="요일">
+            {DAY_NAMES.map((d, i) => (
+              <button key={d} role="tab" aria-selected={selDay === i} className={selDay === i ? 'on' : ''} onClick={() => setSelDay(i)}>
+                {d}
+                {i === today && <small>오늘</small>}
+              </button>
+            ))}
+          </div>
+          <ul className="card day-list">
+            {periods.map((p, pi) => {
+              const e = entryAt(data.timetable, selDay, pi + 1);
+              const isNow = selDay === today && status.kind === 'class' && status.period === pi + 1;
+              return (
+                <Fragment key={pi}>
+                  {p.start === LUNCH_TIME.end && (
+                    <li className="day-lunch">
+                      🍚 점심시간 {LUNCH_TIME.start} ~ {LUNCH_TIME.end}
+                    </li>
+                  )}
+                  <li className={`${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''}`}>
+                    <button onClick={() => open(selDay, pi + 1)} aria-label={`${DAY_NAMES[selDay]}요일 ${pi + 1}교시 ${e?.subject ?? '비어 있음'}`}>
+                      <span className="per">
+                        <strong>{pi + 1}교시</strong>
+                        <small>
+                          {p.start}~{p.end}
+                        </small>
+                      </span>
+                      <span className="subj">
+                        {e ? e.subject : <span className="muted">+ 과목 입력</span>}
+                        {e?.changedFrom && <small className="was">원래 {e.changedFrom}</small>}
+                        {!e?.changedFrom && e?.room && <small className="muted">{e.room}</small>}
+                      </span>
+                      {isNow && <span className="badge">지금</span>}
+                    </button>
+                  </li>
+                </Fragment>
+              );
+            })}
+          </ul>
+        </>
+      ) : (
       <div className="card tt-wrap">
         <table className="tt">
           <thead>
@@ -115,6 +189,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
           </tbody>
         </table>
       </div>
+      )}
       {data.timetable.some((e) => e.changedFrom) && (
         <div className="toolbar">
           <p className="small muted grow">

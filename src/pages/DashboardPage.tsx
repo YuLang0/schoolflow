@@ -74,7 +74,8 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
           </div>
           <div>
             <strong>{nextExam ? ddayLabel(today, nextExam.date) : '-'}</strong>
-            <span>{nextExam ? `다음 시험 · ${nextExam.name}` : '다음 시험'}</span>
+            <span>다음 시험</span>
+            {nextExam && <em title={nextExam.name}>{nextExam.name}</em>}
           </div>
           <div>
             <strong>{classes.length}</strong>

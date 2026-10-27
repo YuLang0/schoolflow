@@ -53,7 +53,7 @@ export function AssignmentsPage({ data, api, focusId }: { data: AppData; api: Da
 
       <div className="card">
         {list.length === 0 ? (
-          <Empty>{filter === 'done' ? '완료한 과제가 없습니다.' : '등록된 과제가 없습니다. 오른쪽 위 버튼으로 추가해 보세요.'}</Empty>
+          <Empty>{filter === 'done' ? '완료한 과제가 없습니다.' : '등록된 과제가 없습니다. + 과제 추가 버튼을 눌러 추가해 보세요.'}</Empty>
         ) : (
           <ul className="list">
             {list.map((a) => {
