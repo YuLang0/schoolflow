@@ -1,6 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useAppData } from '../hooks/useAppData';
 import { useReminders } from '../hooks/useReminders';
+import { useSchool } from '../hooks/useSchool';
+import { schoolWeek } from '../lib/neis';
+import { classKeyOf, needsTimetableSync, syncTimetable } from '../lib/timetableSync';
 import { authMode } from '../lib/auth';
 import type { AppUser } from '../lib/types';
 import { AssignmentsPage } from '../pages/AssignmentsPage';
@@ -61,6 +64,25 @@ export function Shell({
 
   const go = (f: Focus) => setFocus(f);
   const { data } = api;
+  const { school } = useSchool();
+
+  // 학년·반이 정해져 있으면 이번 주 시간표를 자동으로 가져옵니다 (주마다, 반이 바뀔 때마다 한 번)
+  const autoSyncKey = useRef('');
+  useEffect(() => {
+    if (!data || !school || api.loading || !needsTimetableSync(data.settings, new Date())) return;
+    const key = `sf:ttsync:${user.id}:${schoolWeek(new Date()).from}:${classKeyOf(data.settings)}`;
+    // 나이스에 아직 시간표가 없을 때 계속 다시 요청하지 않도록, 같은 주·같은 반은 이번 접속 중 한 번만 시도
+    if (autoSyncKey.current === key || sessionStorage.getItem(key)) return;
+    autoSyncKey.current = key;
+    sessionStorage.setItem(key, '1');
+    void syncTimetable(data, school, new Date())
+      .then(async (r) => {
+        if (r.data && (await api.replaceAll(r.data))) setNotice({ kind: 'success', text: `자동 업데이트: ${r.message}` });
+      })
+      .catch(() => {
+        /* 자동 업데이트 실패는 조용히 넘어가고, 시간표 화면의 버튼으로 다시 시도할 수 있음 */
+      });
+  }, [data, school, api, user.id]);
 
   return (
     <div className="shell">

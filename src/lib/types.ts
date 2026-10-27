@@ -68,6 +68,8 @@ export interface Settings {
   gradeNo: string; // 학년 (예: '2')
   classNo: string; // 반 (예: '3')
   allergies: number[]; // 급식 알레르기 번호 1~19
+  ttSyncWeek: string; // 나이스 시간표를 마지막으로 가져온 주의 월요일 (YYYY-MM-DD)
+  ttSyncClass: string; // 그때의 학년-반 (예: '2-3')
   periodTimes: PeriodTime[];
   notifications: boolean;
   remindDays: number; // 마감 며칠 전부터 알릴지
@@ -113,6 +115,8 @@ export function defaultSettings(): Settings {
     gradeNo: '',
     classNo: '',
     allergies: [],
+    ttSyncWeek: '',
+    ttSyncClass: '',
     periodTimes: DEFAULT_PERIOD_TIMES.map((p) => ({ ...p })),
     notifications: false,
     remindDays: 1,

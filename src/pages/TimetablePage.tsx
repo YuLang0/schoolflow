@@ -2,11 +2,10 @@ import { Fragment, useState, type FormEvent } from 'react';
 import { Banner, Field, Modal } from '../components/ui';
 import type { DataApi } from '../hooks/useAppData';
 import { useSchool } from '../hooks/useSchool';
-import { formatKoreanDate, weekdayIndex } from '../lib/date';
-import { fetchTimetable, isNeisLimited, schoolWeek } from '../lib/neis';
-import { mergeNeisTimetable } from '../lib/neisImport';
+import { weekdayIndex } from '../lib/date';
 import { classStatus, entryAt } from '../lib/schedule';
-import { DAY_NAMES, LUNCH_TIME, PERIOD_COUNT, newId, type AppData, type TimetableEntry } from '../lib/types';
+import { syncTimetable } from '../lib/timetableSync';
+import { DAY_NAMES, LUNCH_TIME, newId, type AppData, type TimetableEntry } from '../lib/types';
 
 export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
   const [edit, setEdit] = useState<TimetableEntry | null>(null);
@@ -26,23 +25,9 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
     setBusy(true);
     setMsg(null);
     try {
-      const week = schoolWeek(new Date());
-      const all = await fetchTimetable(school, gradeNo, classNo, week.from, week.to);
-      const rows = all.filter((r) => r.period <= PERIOD_COUNT); // 우리 학교는 7교시까지
-      const extra = all.length - rows.length;
-      if (rows.length === 0) {
-        setMsg({ kind: 'info', text: `나이스에 ${formatKoreanDate(week.from)} 주의 ${gradeNo}학년 ${classNo}반 시간표가 아직 없습니다. 방학이거나 학교가 아직 올리지 않았을 수 있습니다.` });
-        return;
-      }
-      const merged = mergeNeisTimetable(data.timetable, rows);
-      const dayNames = merged.days.map((d) => DAY_NAMES[d]).join('·');
-      if (data.timetable.length > 0 && !confirm(`${formatKoreanDate(week.from)} 주 시간표(${dayNames})를 나이스 내용으로 바꿉니다. 계속할까요?`)) return;
-      const ok = await api.replaceAll({ ...data, timetable: merged.timetable });
-      if (ok)
-        setMsg({
-          kind: 'success',
-          text: `나이스에서 ${rows.length}개 수업을 가져왔습니다. (${dayNames})${merged.changed > 0 ? ` 지난번과 달라진 수업 ${merged.changed}개는 주황색으로 표시했습니다.` : ''}${extra > 0 ? ` (8교시 이후 ${extra}개는 제외)` : ''}${isNeisLimited() ? ' ※ 서버 연결이 막혀 나이스에 직접 연결했기 때문에 5개까지만 받아 왔습니다.' : ''}`,
-        });
+      const r = await syncTimetable(data, school, new Date());
+      if (r.data && !(await api.replaceAll(r.data))) return;
+      setMsg({ kind: r.kind, text: r.message });
     } catch (e) {
       setMsg({ kind: 'error', text: (e as Error).message });
     } finally {
@@ -56,9 +41,9 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
   return (
     <div className="stack">
       <div className="toolbar">
-        <p className="muted grow">칸을 눌러 과목을 입력하거나 고칠 수 있습니다.</p>
+        <p className="muted grow">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
         <button className="btn ghost" onClick={() => void importNeis()} disabled={busy || !ready} title={ready ? '' : '설정에서 학년·반을 먼저 정해 주세요'}>
-          {busy ? '가져오는 중…' : '나이스에서 가져오기'}
+          {busy ? '가져오는 중…' : '지금 다시 가져오기'}
         </button>
       </div>
       {!ready && <p className="hint">나이스 시간표를 가져오려면 설정 → 내 정보에서 학년·반을 정해 주세요.</p>}

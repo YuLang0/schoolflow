@@ -99,6 +99,8 @@ export function parseBackup(text: string): AppData {
     schoolName: str(s.schoolName, 100),
     school: schoolRef(s.school),
     gradeNo: str(s.gradeNo, 5),
+    ttSyncWeek: isDateStr(s.ttSyncWeek) ? (s.ttSyncWeek as string) : '',
+    ttSyncClass: str(s.ttSyncClass, 20),
     classNo: str(s.classNo, 10),
     allergies: Array.isArray(s.allergies)
       ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)
