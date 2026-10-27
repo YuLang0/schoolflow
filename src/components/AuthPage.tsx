@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { authMode, requestPasswordReset, resendConfirmation, signIn, signUp } from '../lib/auth';
+import { authMode, enterTestMode, requestPasswordReset, resendConfirmation, signIn, signUp } from '../lib/auth';
 import { authErrorMessage } from '../lib/authErrors';
 import { localAuth } from '../lib/localAuth';
 import { newPasswordProblem } from '../lib/password';
@@ -189,9 +189,15 @@ export function AuthPage({ onSignedIn, notice }: { onSignedIn: (u: AppUser) => v
 
         <div className="auth-links">
           {view === 'login' && (
-            <button className="link" onClick={() => go('forgot')}>
-              비밀번호를 잊으셨나요?
-            </button>
+            <>
+              <button className="link" onClick={() => go('forgot')}>
+                비밀번호를 잊으셨나요?
+              </button>
+              <button className="btn ghost block test-mode-btn" onClick={() => onSignedIn(enterTestMode())}>
+                🧪 테스트 모드로 둘러보기
+              </button>
+              <p className="tiny muted">가입 없이 모든 기능을 써 볼 수 있습니다. 입력한 내용은 이 브라우저에만 저장됩니다.</p>
+            </>
           )}
           {view === 'forgot' && (
             <button className="link" onClick={() => go('login')}>

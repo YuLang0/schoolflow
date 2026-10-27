@@ -95,6 +95,8 @@ export interface AppUser {
   id: string;
   email: string;
   name: string;
+  /** 테스트 모드: 계정 없이 둘러보기 (이 브라우저에만 저장) */
+  test?: boolean;
 }
 
 /** 우리 학교 교시 시간 (고정). 4교시와 5교시 사이 13:00~13:50은 점심시간 */

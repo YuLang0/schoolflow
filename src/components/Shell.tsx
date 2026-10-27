@@ -4,7 +4,7 @@ import { useReminders } from '../hooks/useReminders';
 import { useSchool } from '../hooks/useSchool';
 import { schoolWeek } from '../lib/neis';
 import { classKeyOf, needsTimetableSync, syncTimetable } from '../lib/timetableSync';
-import { authMode } from '../lib/auth';
+import { authMode, clearTestData, signOut } from '../lib/auth';
 import type { AppUser } from '../lib/types';
 import { AssignmentsPage } from '../pages/AssignmentsPage';
 import { CalendarPage } from '../pages/CalendarPage';
@@ -99,7 +99,7 @@ export function Shell({
         ))}
         <div className="sidebar-foot">
           <span className={`dot ${api.saving ? 'busy' : 'ok'}`} aria-hidden />
-          {authMode === 'cloud' ? (api.saving ? '동기화 중…' : '동기화됨') : '로컬 저장'}
+          {user.test ? '테스트 모드' : authMode === 'cloud' ? (api.saving ? '동기화 중…' : '동기화됨') : '로컬 저장'}
         </div>
       </nav>
 
@@ -113,6 +113,32 @@ export function Shell({
             <span className="muted small">{user.name || user.email}</span>
           </div>
         </header>
+        {user.test && (
+          <div className="banner banner-info test-banner">
+            <div>🧪 <strong>테스트 모드</strong>입니다. 입력한 내용은 이 브라우저에만 저장되고 계정과 동기화되지 않습니다.</div>
+            <div className="actions">
+              <button
+                className="btn ghost small"
+                onClick={() => {
+                  if (!confirm('테스트 모드에서 입력한 내용을 모두 지울까요?')) return;
+                  clearTestData();
+                  void api.reload();
+                }}
+              >
+                테스트 데이터 지우기
+              </button>
+              <button
+                className="btn primary small"
+                onClick={async () => {
+                  await signOut();
+                  onSignedOut();
+                }}
+              >
+                테스트 끝내기
+              </button>
+            </div>
+          </div>
+        )}
         {notice && (
           <Banner kind={notice.kind} onClose={() => setNotice(undefined)}>
             {notice.text}

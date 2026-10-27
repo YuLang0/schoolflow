@@ -345,3 +345,6 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .tt-image-preview { margin-top: 12px; display: flex; justify-content: center; background: var(--card-2); border-radius: 12px; padding: 10px; }
 .tt-image-preview canvas { width: 100%; height: auto; border-radius: 8px; box-shadow: var(--shadow); }
 .tt-image-preview.portrait canvas { width: auto; max-height: 56vh; max-width: 100%; }
+.test-mode-btn { margin-top: 14px; }
+.test-banner { flex-wrap: wrap; align-items: center; }
+.test-banner .actions { margin: 0; }

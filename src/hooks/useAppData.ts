@@ -20,6 +20,8 @@ export interface DataApi {
 }
 
 function storeFor(user: AppUser): DataStore {
+  // 테스트 모드는 서버에 저장하지 않고 이 브라우저에만 저장
+  if (user.test) return new LocalStore(user.email);
   return supabase ? new CloudStore(supabase, user.id) : new LocalStore(user.email);
 }
 
