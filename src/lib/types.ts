@@ -59,6 +59,13 @@ export interface PeriodTime {
   end: string;
 }
 
+export interface PushSub {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  device: string; // 아이폰 / 안드로이드 / 컴퓨터
+  at: string;
+}
+
 export interface DDay {
   id: string;
   name: string;
@@ -84,6 +91,8 @@ export interface Settings {
   homeRoom: string; // 우리 반 교실 (이동수업 판단용, 예: '2-3', '201호')
   ddays: DDay[]; // 홈 화면 D-day 위젯
   favoriteFoods: string[]; // 좋아하는 급식 메뉴 키워드
+  favoriteAlert: boolean; // 좋아하는 메뉴 나오는 날 아침 알림
+  pushSubs: PushSub[]; // 앱을 닫아도 알림을 받을 기기들
   periodTimes: PeriodTime[];
   notifications: boolean;
   remindDays: number; // 마감 며칠 전부터 알릴지
@@ -135,6 +144,8 @@ export function defaultSettings(): Settings {
     homeRoom: '',
     ddays: [],
     favoriteFoods: [],
+    favoriteAlert: true,
+    pushSubs: [],
     periodTimes: DEFAULT_PERIOD_TIMES.map((p) => ({ ...p })),
     notifications: false,
     remindDays: 1,

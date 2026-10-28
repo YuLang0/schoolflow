@@ -1,6 +1,7 @@
 import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import { Banner, Field, PasswordInput } from '../components/ui';
 import { showNotification } from '../hooks/useReminders';
+import { pushSupport, subscribeThisDevice, thisDeviceEndpoint, unsubscribeThisDevice } from '../lib/push';
 import type { DataApi } from '../hooks/useAppData';
 import { authMode, changePassword, signOut, updateName } from '../lib/auth';
 import { authErrorMessage } from '../lib/authErrors';
@@ -317,6 +318,11 @@ function PeriodSection({ settings }: { settings: Settings }) {
 function NotifySection({ settings, save }: { settings: Settings; save: (p: Partial<Settings>) => void }) {
   const supported = 'Notification' in window;
   const [perm, setPerm] = useState(supported ? Notification.permission : 'denied');
+  const support = pushSupport();
+  const [pushBusy, setPushBusy] = useState(false);
+  const [pushMsg, setPushMsg] = useState<Msg>(null);
+  const mine = thisDeviceEndpoint();
+  const pushOn = !!mine && settings.pushSubs.some((p) => p.endpoint === mine);
 
   const toggle = async (on: boolean) => {
     if (on && supported && Notification.permission !== 'granted') {
@@ -327,15 +333,56 @@ function NotifySection({ settings, save }: { settings: Settings; save: (p: Parti
     save({ notifications: on });
   };
 
+  const togglePush = async (on: boolean) => {
+    setPushBusy(true);
+    setPushMsg(null);
+    try {
+      if (on) {
+        const sub = await subscribeThisDevice();
+        setPerm('granted');
+        // 같은 기기는 한 번만, 기기는 최대 5대
+        save({ pushSubs: [...settings.pushSubs.filter((p) => p.endpoint !== sub.endpoint), sub].slice(-5) });
+        setPushMsg({ kind: 'success', text: '이 기기에서 앱을 닫아도 알림을 받습니다.' });
+      } else {
+        const endpoint = await unsubscribeThisDevice();
+        save({ pushSubs: settings.pushSubs.filter((p) => p.endpoint !== endpoint) });
+        setPushMsg({ kind: 'info', text: '이 기기의 알림을 껐습니다.' });
+      }
+    } catch (e) {
+      setPushMsg({ kind: 'error', text: (e as Error).message });
+    } finally {
+      setPushBusy(false);
+    }
+  };
+
   return (
     <section className="card">
       <h3>알림</h3>
-      {!supported ? (
-        <p className="muted small">이 브라우저는 알림을 지원하지 않습니다. 아이폰은 홈 화면에 추가한 앱에서만 알림을 받을 수 있습니다.</p>
-      ) : (
+
+      <div className="push-box">
+        <label className="check">
+          <input type="checkbox" checked={pushOn} disabled={pushBusy || support !== 'ok' || authMode !== 'cloud'} onChange={(e) => void togglePush(e.target.checked)} />
+          <strong>앱을 닫아도 알림 받기 (이 기기)</strong>
+        </label>
+        {authMode !== 'cloud' ? (
+          <p className="hint">계정 동기화 모드에서만 쓸 수 있습니다.</p>
+        ) : support === 'ios-browser' ? (
+          <p className="warn">아이폰은 Safari 공유 버튼 → "홈 화면에 추가"로 앱을 설치한 뒤, 설치한 앱에서 켜야 합니다.</p>
+        ) : support !== 'ok' ? (
+          <p className="hint">이 브라우저는 앱을 닫았을 때 오는 알림을 지원하지 않습니다.</p>
+        ) : (
+          <p className="hint">수업 5분 전, 아침 7시 30분에 시험·좋아하는 메뉴를 알려 드립니다. 아래 항목으로 종류를 고를 수 있습니다.</p>
+        )}
+        {settings.pushSubs.length > 0 && (
+          <p className="hint">알림 받는 기기 {settings.pushSubs.length}대: {settings.pushSubs.map((p) => (p.endpoint === mine ? `${p.device}(이 기기)` : p.device)).join(', ')}</p>
+        )}
+        {pushMsg && <Banner kind={pushMsg.kind}>{pushMsg.text}</Banner>}
+      </div>
+
+      {supported && (
         <>
           <label className="check">
-            <input type="checkbox" checked={settings.notifications && perm === 'granted'} onChange={(e) => void toggle(e.target.checked)} /> 시험 알림 받기
+            <input type="checkbox" checked={settings.notifications && (perm === 'granted' || pushOn)} onChange={(e) => void toggle(e.target.checked)} /> 시험 알림 받기
           </label>
           {perm === 'denied' && <p className="warn">브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽 자물쇠 아이콘에서 알림을 허용해 주세요.</p>}
           <div className="row2">
@@ -354,7 +401,10 @@ function NotifySection({ settings, save }: { settings: Settings; save: (p: Parti
           <label className="check">
             <input type="checkbox" checked={settings.classReminder} onChange={(e) => save({ classReminder: e.target.checked })} /> 수업 시작 5분 전 알림
           </label>
-          <p className="hint">앱(또는 브라우저 탭)이 열려 있을 때 알림이 옵니다.</p>
+          <label className="check">
+            <input type="checkbox" checked={settings.favoriteAlert} onChange={(e) => save({ favoriteAlert: e.target.checked })} /> 좋아하는 메뉴가 나오는 날 아침 알림
+          </label>
+          <p className="hint">"앱을 닫아도 알림"을 켜지 않으면 앱이 열려 있을 때만 알림이 옵니다.</p>
           <button className="btn ghost small" disabled={perm !== 'granted'} onClick={() => void showNotification('SchoolFlow 알림 테스트', '알림이 잘 도착했습니다!')}>
             테스트 알림 보내기
           </button>

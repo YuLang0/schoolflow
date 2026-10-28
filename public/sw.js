@@ -1,6 +1,6 @@
 // SchoolFlow 서비스 워커: 오프라인에서도 앱 화면을 열 수 있게 정적 파일만 캐시합니다.
 // Supabase 등 외부 요청은 건드리지 않습니다.
-const CACHE = 'schoolflow-v1';
+const CACHE = 'schoolflow-v2';
 const SHELL = ['/', '/index.html', '/manifest.webmanifest', '/icon.svg', '/theme-init.js'];
 
 self.addEventListener('install', (event) => {
@@ -49,6 +49,24 @@ self.addEventListener('fetch', (event) => {
           return res;
         }),
     ),
+  );
+});
+
+// 앱을 닫아도 오는 알림 (서버 예약 함수가 보냄)
+self.addEventListener('push', (event) => {
+  let data = {};
+  try {
+    data = event.data ? event.data.json() : {};
+  } catch {
+    data = { title: 'SchoolFlow', body: event.data ? event.data.text() : '' };
+  }
+  event.waitUntil(
+    self.registration.showNotification(data.title || 'SchoolFlow', {
+      body: data.body || '',
+      tag: data.tag,
+      icon: '/icon.svg',
+      badge: '/icon.svg',
+    }),
   );
 });
 

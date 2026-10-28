@@ -1,6 +1,7 @@
 import { useEffect } from 'react';
 import { dueReminders } from '../lib/reminders';
 import { toDateStr } from '../lib/date';
+import { thisDeviceEndpoint } from '../lib/push';
 import type { AppData, AppUser } from '../lib/types';
 
 const sentKey = (user: AppUser) => `sf:notified:${user.id}`;
@@ -30,7 +31,10 @@ export async function showNotification(title: string, body: string) {
 /** 앱이 열려 있는 동안 30초마다 보낼 알림이 있는지 확인 */
 export function useReminders(user: AppUser, data: AppData | null) {
   useEffect(() => {
-    if (!data?.settings.notifications) return;
+    if (!data?.settings.notifications && !data?.settings.classReminder) return;
+    // 이 기기가 앱을 닫아도 오는 알림을 받고 있으면 같은 알림이 두 번 오지 않게 앱 안 알림은 끔
+    const mine = thisDeviceEndpoint();
+    if (mine && data.settings.pushSubs.some((p) => p.endpoint === mine)) return;
     const tick = () => {
       if (!('Notification' in window) || Notification.permission !== 'granted') return;
       const now = new Date();

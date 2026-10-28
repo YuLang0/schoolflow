@@ -494,3 +494,5 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 :root[data-theme='dark'] .fav-badge { background: #3a300d; color: #ffd76a; }
 .day-tabs button { position: relative; }
 .fav-dot { position: absolute; top: 5px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: #f5b40b; }
+.push-box { background: var(--card-2); border-radius: 12px; padding: 4px 12px 10px; margin-bottom: 8px; }
+.toolbar-text { flex: 1 1 280px; margin: 0; min-width: 0; }

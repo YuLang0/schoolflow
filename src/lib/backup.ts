@@ -6,7 +6,9 @@ export const BACKUP_APP = 'schoolflow';
 export const BACKUP_VERSION = 1;
 
 export function makeBackup(data: AppData, now = new Date()): string {
-  return JSON.stringify({ app: BACKUP_APP, version: BACKUP_VERSION, exportedAt: now.toISOString(), data }, null, 2);
+  // 알림 받을 기기 정보는 백업에 넣지 않음 (다른 계정·기기로 옮기면 안 됨)
+  const clean = { ...data, settings: { ...data.settings, pushSubs: [] } };
+  return JSON.stringify({ app: BACKUP_APP, version: BACKUP_VERSION, exportedAt: now.toISOString(), data: clean }, null, 2);
 }
 
 const str = (v: unknown, max = 2000) => (typeof v === 'string' ? v.slice(0, max) : '');
@@ -112,6 +114,8 @@ export function parseBackup(text: string): AppData {
     favoriteFoods: Array.isArray(s.favoriteFoods)
       ? [...new Set((s.favoriteFoods as unknown[]).map((f) => str(f, 20).trim()).filter(Boolean))].slice(0, 30)
       : [],
+    favoriteAlert: s.favoriteAlert !== false,
+    pushSubs: [],
     classNo: str(s.classNo, 10),
     allergies: Array.isArray(s.allergies)
       ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)

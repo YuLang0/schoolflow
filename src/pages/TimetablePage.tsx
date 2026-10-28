@@ -67,7 +67,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
             </button>
           </div>
         ) : (
-          <p className="muted">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
+          <p className="muted toolbar-text">매주 처음 앱을 열 때 나이스에서 이번 주 시간표를 자동으로 가져옵니다. 칸을 눌러 직접 고칠 수도 있습니다.</p>
         )}
         <span className="grow" />
         <button className={`btn ghost ${mobile ? 'small' : ''}`} onClick={() => setImageOpen(true)} disabled={data.timetable.length === 0}>
