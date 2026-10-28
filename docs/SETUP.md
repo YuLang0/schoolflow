@@ -36,7 +36,7 @@ Gmail 계정 하나를 메일 발송용으로 연결하면 하루 약 500통까�
 
 | Key | 값 | 어디서 |
 |---|---|---|
-| `SUPABASE_SERVICE_ROLE_KEY` | Supabase 비밀 키 | Supabase → Project Settings → **API Keys** → `service_role` 또는 `secret` 키. 화면에서 Reveal 후 복사 |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase 비밀 키 | Supabase → Project Settings → **API Keys** → 아래쪽 **Secret keys**의 `sb_secret_…` 키 (복사 아이콘). 예전 `service_role` 키(eyJ…)도 동작 |
 | `VAPID_PRIVATE_KEY` | 알림 서명용 비밀 키 | Claude 대화에서 받은 값. 코드의 공개키 `BMb5qu7Q…`와 짝이 맞는 키 |
 
 - 두 값 모두 **절대 코드·채팅·깃허브에 올리지 마세요.** 특히 service_role 키는 모든 데이터에 접근할 수 있는 키라 Netlify 환경변수에만 넣습니다.

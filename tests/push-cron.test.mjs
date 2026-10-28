@@ -108,6 +108,17 @@ describe('push-cron 함수', () => {
     expect((await r.json()).sent).toBe(2);
   });
 
+  it('새 sb_secret_ 키는 apikey 헤더로만, 예전 JWT 키는 Authorization에도 넣음', async () => {
+    for (const [key, auth] of [['sb_secret_abc', undefined], ['eyJhbGc.x.y', 'Bearer eyJhbGc.x.y']]) {
+      const { fn } = fakeFetch({ settings: [] });
+      const e2 = (k) => (k === 'SUPABASE_SERVICE_ROLE_KEY' ? key : env(k));
+      await handler(null, {}, { now: kst(2026, 10, 28, 7, 30), fetch: fn, env: e2, send: vi.fn() });
+      const h = fn.mock.calls[0][1].headers;
+      expect(h.apikey).toBe(key);
+      expect(h.authorization).toBe(auth);
+    }
+  });
+
   it('환경변수가 없으면 500', async () => {
     const r = await handler(null, {}, { now: kst(2026, 10, 28, 7, 30), fetch: vi.fn(), env: () => '', send: vi.fn() });
     expect(r.status).toBe(500);

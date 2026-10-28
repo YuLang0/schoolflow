@@ -53,7 +53,13 @@ export default async function handler(_req, _context, deps = {}) {
   const sb = (path, init = {}) =>
     fetchImpl(`${url}/rest/v1/${path}`, {
       ...init,
-      headers: { apikey: serviceKey, authorization: `Bearer ${serviceKey}`, 'content-type': 'application/json', ...(init.headers ?? {}) },
+      headers: {
+        apikey: serviceKey,
+        // 예전 service_role 키(JWT)만 Authorization에 넣고, 새 sb_secret_ 키는 apikey 헤더만으로 인증
+        ...(serviceKey.startsWith('eyJ') ? { authorization: `Bearer ${serviceKey}` } : {}),
+        'content-type': 'application/json',
+        ...(init.headers ?? {}),
+      },
     });
 
   const settingsRows = await (await sb('schoolflow_items?collection=eq.settings&select=user_id,data')).json();
