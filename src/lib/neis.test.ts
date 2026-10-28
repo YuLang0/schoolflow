@@ -56,10 +56,10 @@ describe('시간표', () => {
   ]);
   it('요일·교시 변환, 주말·빈 과목 제외', () => {
     expect(rows).toEqual([
-      { date: '2026-10-26', day: 0, period: 1, subject: '수학Ⅰ' },
-      { date: '2026-10-26', day: 0, period: 2, subject: '영어' },
-      { date: '2026-10-26', day: 0, period: 3, subject: '화면 구현' },
-      { date: '2026-10-27', day: 1, period: 8, subject: '자율' },
+      { date: '2026-10-26', day: 0, period: 1, subject: '수학Ⅰ', room: '' },
+      { date: '2026-10-26', day: 0, period: 2, subject: '영어', room: '' },
+      { date: '2026-10-26', day: 0, period: 3, subject: '화면 구현', room: '' },
+      { date: '2026-10-27', day: 1, period: 8, subject: '자율', room: '' },
     ]);
   });
   it('합치기: 나이스에 있는 요일만 바꾸고, 같은 과목이면 교실 유지', () => {

@@ -3,6 +3,7 @@ import { MealCard } from '../components/MealCard';
 import type { Focus } from '../components/Shell';
 import { Banner, Empty } from '../components/ui';
 import { useIsMobile } from '../hooks/useIsMobile';
+import { favoriteDishes } from '../lib/favorites';
 import { useMeals } from '../hooks/useMeals';
 import { useSchool } from '../hooks/useSchool';
 import { addDays, formatKoreanDate, parseDateStr, toDateStr } from '../lib/date';
@@ -66,6 +67,7 @@ export function MealsPage({ data }: { data: AppData; go?: (f: Focus) => void }) 
               return (
                 <button key={d} role="tab" aria-selected={cur === d} className={cur === d ? 'on' : ''} onClick={() => setSelDate(d)}>
                   {'일월화수목금토'[parseDateStr(d).getDay()]}
+                  {meals.some((m) => m.date === d && favoriteDishes(m, data.settings.favoriteFoods).length > 0) && <i className="fav-dot" aria-label="좋아하는 메뉴 있음" />}
                   <small>{d === today ? '오늘' : `${parseDateStr(d).getDate()}일`}</small>
                 </button>
               );
@@ -79,7 +81,7 @@ export function MealsPage({ data }: { data: AppData; go?: (f: Focus) => void }) 
                 <h3>
                   {formatKoreanDate(cur)} {cur === today && <span className="badge">오늘</span>}
                 </h3>
-                {list.length === 0 ? <Empty>급식 정보 없음</Empty> : list.map((m) => <MealCard key={m.type} meal={m} allergies={allergies} showNumbers={showNumbers} />)}
+                {list.length === 0 ? <Empty>급식 정보 없음</Empty> : list.map((m) => <MealCard key={m.type} meal={m} allergies={allergies} showNumbers={showNumbers} favorites={data.settings.favoriteFoods} />)}
               </section>
             );
           })()}
@@ -94,7 +96,7 @@ export function MealsPage({ data }: { data: AppData; go?: (f: Focus) => void }) 
                 <h3>
                   {formatKoreanDate(d)} {d === today && <span className="badge">오늘</span>}
                 </h3>
-                {list.length === 0 ? <Empty>급식 정보 없음</Empty> : list.map((m) => <MealCard key={m.type} meal={m} allergies={allergies} showNumbers={showNumbers} />)}
+                {list.length === 0 ? <Empty>급식 정보 없음</Empty> : list.map((m) => <MealCard key={m.type} meal={m} allergies={allergies} showNumbers={showNumbers} favorites={data.settings.favoriteFoods} />)}
               </section>
             );
           })}

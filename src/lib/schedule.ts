@@ -36,3 +36,23 @@ export function todayClasses(timetable: TimetableEntry[], now: Date): TimetableE
   const day = weekdayIndex(now);
   return timetable.filter((e) => e.day === day).sort((a, b) => a.period - b.period);
 }
+
+const roomKey = (s: string) => s.replace(/\s|호|교실|반/g, '').toLowerCase();
+
+/** 이동수업인지: 직접 표시했거나, 교실이 우리 반 교실과 다르면 */
+export function isMovingClass(e: TimetableEntry | undefined, homeRoom: string): boolean {
+  if (!e || e.subject === '수업 없음') return false;
+  if (e.moving) return true;
+  return !!(e.room && homeRoom && roomKey(e.room) !== roomKey(homeRoom));
+}
+
+/** 공강: 그날 첫 수업과 마지막 수업 사이에 비어 있는 교시 */
+export function freePeriods(timetable: TimetableEntry[], day: number): number[] {
+  const filled = timetable.filter((e) => e.day === day && e.subject !== '수업 없음').map((e) => e.period);
+  if (filled.length < 2) return [];
+  const first = Math.min(...filled);
+  const last = Math.max(...filled);
+  const out: number[] = [];
+  for (let p = first + 1; p < last; p++) if (!filled.includes(p)) out.push(p);
+  return out;
+}

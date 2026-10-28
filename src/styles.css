@@ -467,3 +467,30 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .stats em { font-style: normal; font-size: 0.72rem; color: var(--warn); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .stats em.plain { color: var(--muted); }
+
+/* 이동수업·공강 */
+.badge.move { background: #e0f2fe; color: #0369a1; }
+:root[data-theme='dark'] .badge.move { background: #0c2d44; color: #7cc7f5; }
+.tt td.moving button { border-style: dashed; border-color: #38bdf8; }
+.tt td.free button { background: transparent; border-style: dashed; }
+.tt .free-label { font-size: 0.8rem; color: var(--muted); }
+.day-list li.free .subj { font-weight: 600; }
+
+/* D-day 위젯 */
+.dday-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; }
+.dday-chip { background: var(--card-2); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; min-width: 0; }
+.dday-chip strong { font-size: 1.3rem; color: var(--primary); }
+.dday-chip span { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dday-chip small { color: var(--muted); font-size: 0.75rem; }
+.dday-chip.near { background: var(--warn-soft); }
+.dday-chip.near strong { color: var(--warn); }
+/* 좋아하는 메뉴 */
+.chip.on-fav { background: #fff6d6; border-color: #f5c542; color: #8a6100; font-weight: 700; }
+:root[data-theme='dark'] .chip.on-fav { background: #3a300d; color: #ffd76a; }
+.dishes li.fav { color: #b7791f; font-weight: 800; }
+:root[data-theme='dark'] .dishes li.fav { color: #ffd76a; }
+@media (max-width: 720px) { .dday-chips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.fav-badge { background: #fff6d6; color: #8a6100; margin-left: 6px; vertical-align: 2px; }
+:root[data-theme='dark'] .fav-badge { background: #3a300d; color: #ffd76a; }
+.day-tabs button { position: relative; }
+.fav-dot { position: absolute; top: 5px; right: 7px; width: 7px; height: 7px; border-radius: 50%; background: #f5b40b; }

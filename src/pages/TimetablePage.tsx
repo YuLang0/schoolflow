@@ -5,7 +5,7 @@ import type { DataApi } from '../hooks/useAppData';
 import { useIsMobile } from '../hooks/useIsMobile';
 import { useSchool } from '../hooks/useSchool';
 import { weekdayIndex } from '../lib/date';
-import { classStatus, entryAt } from '../lib/schedule';
+import { classStatus, entryAt, freePeriods, isMovingClass } from '../lib/schedule';
 import { syncTimetable } from '../lib/timetableSync';
 import { DAY_NAMES, LUNCH_TIME, newId, type AppData, type TimetableEntry } from '../lib/types';
 
@@ -15,6 +15,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
   const today = weekdayIndex(now);
   const status = classStatus(now, data.settings.periodTimes);
   const periods = data.settings.periodTimes;
+  const homeRoom = data.settings.homeRoom;
 
   const [busy, setBusy] = useState(false);
   const [imageOpen, setImageOpen] = useState(false);
@@ -102,6 +103,8 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
             {periods.map((p, pi) => {
               const e = entryAt(data.timetable, selDay, pi + 1);
               const isNow = selDay === today && status.kind === 'class' && status.period === pi + 1;
+              const moving = isMovingClass(e, homeRoom);
+              const free = !e && freePeriods(data.timetable, selDay).includes(pi + 1);
               return (
                 <Fragment key={pi}>
                   {p.start === LUNCH_TIME.end && (
@@ -109,7 +112,7 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
                       🍚 점심시간 {LUNCH_TIME.start} ~ {LUNCH_TIME.end}
                     </li>
                   )}
-                  <li className={`${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''}`}>
+                  <li className={`${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''} ${free ? 'free' : ''}`}>
                     <button onClick={() => open(selDay, pi + 1)} aria-label={`${DAY_NAMES[selDay]}요일 ${pi + 1}교시 ${e?.subject ?? '비어 있음'}`}>
                       <span className="per">
                         <strong>{pi + 1}교시</strong>
@@ -118,10 +121,11 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
                         </small>
                       </span>
                       <span className="subj">
-                        {e ? e.subject : <span className="muted">+ 과목 입력</span>}
+                        {e ? e.subject : free ? <span className="muted">공강</span> : <span className="muted">+ 과목 입력</span>}
                         {e?.changedFrom && <small className="was">원래 {e.changedFrom}</small>}
                         {!e?.changedFrom && e?.room && <small className="muted">{e.room}</small>}
                       </span>
+                      {moving && <span className="badge move">🚶 이동</span>}
                       {isNow && <span className="badge">지금</span>}
                     </button>
                   </li>
@@ -164,8 +168,10 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
                 {DAY_NAMES.map((_, day) => {
                   const e = entryAt(data.timetable, day, pi + 1);
                   const isNow = day === today && status.kind === 'class' && status.period === pi + 1;
+                  const moving = isMovingClass(e, homeRoom);
+                  const free = !e && freePeriods(data.timetable, day).includes(pi + 1);
                   return (
-                    <td key={day} className={`${day === today ? 'today' : ''} ${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''}`}>
+                    <td key={day} className={`${day === today ? 'today' : ''} ${isNow ? 'now' : ''} ${e?.changedFrom ? 'changed' : ''} ${moving ? 'moving' : ''} ${free ? 'free' : ''}`}>
                       <button
                         onClick={() => open(day, pi + 1)}
                         aria-label={`${DAY_NAMES[day]}요일 ${pi + 1}교시 ${e?.subject ?? '비어 있음'}${e?.changedFrom ? ` (변경됨, 이전: ${e.changedFrom})` : ''}`}
@@ -174,8 +180,19 @@ export function TimetablePage({ data, api }: { data: AppData; api: DataApi }) {
                         {e ? (
                           <>
                             <strong>{e.subject}</strong>
-                            {e.changedFrom ? <small className="was">← {e.changedFrom}</small> : e.room && <small>{e.room}</small>}
+                            {e.changedFrom ? (
+                              <small className="was">← {e.changedFrom}</small>
+                            ) : (
+                              (moving || e.room) && (
+                                <small>
+                                  {moving && '🚶 '}
+                                  {e.room || '이동'}
+                                </small>
+                              )
+                            )}
                           </>
+                        ) : free ? (
+                          <span className="free-label">공강</span>
                         ) : (
                           <span className="plus">+</span>
                         )}
@@ -233,6 +250,9 @@ function EntryModal({ entry, exists, api, onClose }: { entry: TimetableEntry; ex
           <Field label="교실">{(id) => <input id={id} value={f.room} onChange={(e) => setF({ ...f, room: e.target.value })} maxLength={30} />}</Field>
           <Field label="선생님">{(id) => <input id={id} value={f.teacher} onChange={(e) => setF({ ...f, teacher: e.target.value })} maxLength={30} />}</Field>
         </div>
+        <label className="check">
+          <input type="checkbox" checked={!!f.moving} onChange={(e) => setF({ ...f, moving: e.target.checked || undefined })} /> 이동수업 (다른 교실로 이동)
+        </label>
         <div className="actions">
           {exists && (
             <button

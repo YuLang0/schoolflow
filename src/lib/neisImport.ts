@@ -29,8 +29,9 @@ export function mergeNeisTimetable(
       day: r.day,
       period: r.period,
       subject,
-      room: same ? prev.room : '',
+      room: same ? prev.room || r.room : r.room,
       teacher: same ? prev.teacher : '',
+      moving: same ? prev.moving : undefined,
       changedFrom: prev && !same ? prev.subject : null,
     });
   }

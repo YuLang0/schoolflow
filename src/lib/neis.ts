@@ -28,6 +28,7 @@ export interface TimetableRow {
   day: number; // 0=월
   period: number;
   subject: string;
+  room: string; // 나이스에 강의실이 있으면 (CLRM_NM)
 }
 
 export const ALLERGENS = [
@@ -173,7 +174,7 @@ export function toTimetableRows(rows: Row[]): TimetableRow[] {
     .map((r) => {
       const date = fromYmd(r.ALL_TI_YMD);
       const [y, m, d] = date.split('-').map(Number);
-      return { date, day: weekdayIndex(new Date(y, m - 1, d)), period: Number(r.PERIO), subject: cleanSubject(r.ITRT_CNTNT ?? '') };
+      return { date, day: weekdayIndex(new Date(y, m - 1, d)), period: Number(r.PERIO), subject: cleanSubject(r.ITRT_CNTNT ?? ''), room: (r.CLRM_NM ?? '').trim().slice(0, 30) };
     })
     .filter((r) => r.day <= 4 && r.period >= 1 && r.period <= 12 && r.subject);
 }

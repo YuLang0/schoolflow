@@ -1,12 +1,14 @@
 import type { Focus } from '../components/Shell';
+import { DDayCard } from '../components/DDayCard';
 import { MealCard } from '../components/MealCard';
+import { favoriteDishes } from '../lib/favorites';
 import { Empty } from '../components/ui';
 import { useMeals } from '../hooks/useMeals';
 import { useSchool } from '../hooks/useSchool';
 import { useSchoolEvents } from '../hooks/useSchoolEvents';
 import { groupEvents } from '../lib/neis';
 import { addDays, ddayLabel, formatKoreanDate, toDateStr } from '../lib/date';
-import { classStatus, todayClasses } from '../lib/schedule';
+import { classStatus, isMovingClass, todayClasses } from '../lib/schedule';
 import type { AppData, AppUser } from '../lib/types';
 
 function statusText(data: AppData, now: Date): string {
@@ -82,6 +84,7 @@ export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser
       </section>
 
       <div className="grid2">
+        <DDayCard ddays={data.settings.ddays} go={go} />
         <section className="card">
           <div className="card-head">
             <h3>오늘 시간표</h3>
@@ -99,6 +102,7 @@ export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser
                   <span className="grow">
                     {c.subject}
                     {c.changedFrom && <span className="badge warn changed-badge">변경 · 원래 {c.changedFrom}</span>}
+                    {isMovingClass(c, data.settings.homeRoom) && <span className="badge move changed-badge">🚶 이동</span>}
                   </span>
                   <span className="muted small">
                     {data.settings.periodTimes[c.period - 1]?.start ?? ''} {c.room}
@@ -166,7 +170,10 @@ export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser
         {school && (
           <section className="card">
             <div className="card-head">
-              <h3>오늘 급식</h3>
+              <h3>
+                오늘 급식
+                {lunch && favoriteDishes(lunch, data.settings.favoriteFoods).length > 0 && <span className="badge fav-badge">⭐ {favoriteDishes(lunch, data.settings.favoriteFoods)[0]} 나와요!</span>}
+              </h3>
               <button className="link" onClick={() => go({ view: 'meals' })}>
                 이번 주 보기
               </button>
@@ -174,7 +181,7 @@ export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser
             {meals.error ? (
               <Empty>{meals.error}</Empty>
             ) : lunch ? (
-              <MealCard meal={lunch} allergies={data.settings.allergies} showNumbers={false} />
+              <MealCard meal={lunch} allergies={data.settings.allergies} showNumbers={false} favorites={data.settings.favoriteFoods} />
             ) : (
               <Empty>{meals.loading ? '불러오는 중…' : '오늘은 급식 정보가 없습니다.'}</Empty>
             )}

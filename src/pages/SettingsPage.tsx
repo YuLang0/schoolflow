@@ -11,7 +11,7 @@ import { downloadText } from '../lib/download';
 import { FIXED_SCHOOL_NAME } from '../hooks/useSchool';
 import { ALLERGENS } from '../lib/neis';
 import { newPasswordProblem } from '../lib/password';
-import { DAY_NAMES, LUNCH_TIME, type AppData, type AppUser, type Settings } from '../lib/types';
+import { DAY_NAMES, LUNCH_TIME, newId, type AppData, type AppUser, type Settings } from '../lib/types';
 
 type Theme = 'system' | 'light' | 'dark';
 type Msg = { kind: 'error' | 'success' | 'info'; text: string } | null;
@@ -60,6 +60,8 @@ export function SettingsPage({
       </section>
 
       <PeriodSection settings={s} />
+      <DDaySection settings={s} save={save} />
+      <FavoriteFoodSection settings={s} save={save} />
       <AllergySection settings={s} save={save} />
       <NotifySection settings={s} save={save} />
       <DataSection data={data} api={api} />
@@ -88,6 +90,7 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
   const [name, setName] = useState(user.name);
   const [gradeNo, setGradeNo] = useState(settings.gradeNo);
   const [classNo, setClassNo] = useState(settings.classNo);
+  const [homeRoom, setHomeRoom] = useState(settings.homeRoom);
   const [msg, setMsg] = useState<Msg>(null);
   const submit = async (e: FormEvent) => {
     e.preventDefault();
@@ -96,7 +99,7 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
         await updateName(user, name);
         onUserChange({ ...user, name: name.trim() });
       }
-      save({ schoolName: FIXED_SCHOOL_NAME, gradeNo, classNo: classNo.trim() });
+      save({ schoolName: FIXED_SCHOOL_NAME, gradeNo, classNo: classNo.trim(), homeRoom: homeRoom.trim() });
       setMsg({ kind: 'success', text: '저장했습니다.' });
     } catch (err) {
       setMsg({ kind: 'error', text: authErrorMessage(err) });
@@ -130,9 +133,83 @@ function ProfileSection({ user, onUserChange, settings, save }: { user: AppUser;
           {(id) => <input id={id} value={classNo} onChange={(e) => setClassNo(e.target.value)} maxLength={10} inputMode="numeric" />}
         </Field>
       </div>
+      <Field label="우리 반 교실" hint="시간표의 교실이 이것과 다르면 🚶 이동수업으로 표시합니다. (예: 2-3, 203호)">
+        {(id) => <input id={id} value={homeRoom} onChange={(e) => setHomeRoom(e.target.value)} maxLength={30} placeholder="비워 두면 직접 표시한 수업만 이동수업" />}
+      </Field>
       {msg && <Banner kind={msg.kind}>{msg.text}</Banner>}
       <button className="btn primary">저장</button>
       <p className="hint">학년·반을 정하면 나이스에서 우리 반 시간표를 가져올 수 있습니다.</p>
+    </form>
+  );
+}
+
+function DDaySection({ settings, save }: { settings: Settings; save: (p: Partial<Settings>) => void }) {
+  const [name, setName] = useState('');
+  const [date, setDate] = useState('');
+  const add = (e: FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !date) return;
+    save({ ddays: [...settings.ddays, { id: newId(), name: name.trim().slice(0, 30), date }].slice(-20) });
+    setName('');
+    setDate('');
+  };
+  const list = [...settings.ddays].sort((a, b) => a.date.localeCompare(b.date));
+  return (
+    <form className="card" onSubmit={add}>
+      <h3>D-day</h3>
+      <p className="muted small">홈 화면에 남은 날을 보여 줍니다. 지난 날은 홈에서 자동으로 숨겨집니다.</p>
+      {list.length > 0 && (
+        <ul className="list">
+          {list.map((d) => (
+            <li key={d.id}>
+              <span className="grow">{d.name}</span>
+              <span className="muted small">{d.date}</span>
+              <button type="button" className="icon-btn" onClick={() => save({ ddays: settings.ddays.filter((x) => x.id !== d.id) })} aria-label={`${d.name} 삭제`}>
+                ✕
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <div className="row2">
+        <Field label="이름">{(id) => <input id={id} value={name} onChange={(e) => setName(e.target.value)} maxLength={30} placeholder="예: 수능, 겨울방학" />}</Field>
+        <Field label="날짜">{(id) => <input id={id} type="date" value={date} onChange={(e) => setDate(e.target.value)} />}</Field>
+      </div>
+      <button className="btn ghost" disabled={!name.trim() || !date}>
+        + D-day 추가
+      </button>
+    </form>
+  );
+}
+
+function FavoriteFoodSection({ settings, save }: { settings: Settings; save: (p: Partial<Settings>) => void }) {
+  const [word, setWord] = useState('');
+  const add = (e: FormEvent) => {
+    e.preventDefault();
+    const w = word.trim().slice(0, 20);
+    if (!w || settings.favoriteFoods.includes(w)) return setWord('');
+    save({ favoriteFoods: [...settings.favoriteFoods, w].slice(0, 30) });
+    setWord('');
+  };
+  return (
+    <form className="card" onSubmit={add}>
+      <h3>좋아하는 급식 메뉴</h3>
+      <p className="muted small">메뉴 이름에 이 단어가 들어가면 급식표와 홈 화면에 ⭐로 표시하고, 앱을 닫아도 오는 알림을 켜 두면 그날 아침에 알려 드립니다.</p>
+      {settings.favoriteFoods.length > 0 && (
+        <div className="chips">
+          {settings.favoriteFoods.map((f) => (
+            <button key={f} type="button" className="chip on-fav" onClick={() => save({ favoriteFoods: settings.favoriteFoods.filter((x) => x !== f) })} aria-label={`${f} 삭제`}>
+              ⭐ {f} ✕
+            </button>
+          ))}
+        </div>
+      )}
+      <div className="search-row">
+        <input value={word} onChange={(e) => setWord(e.target.value)} maxLength={20} placeholder="예: 치킨, 돈가스, 마라" aria-label="좋아하는 메뉴" />
+        <button className="btn ghost" disabled={!word.trim()}>
+          추가
+        </button>
+      </div>
     </form>
   );
 }

@@ -11,6 +11,8 @@ export interface TimetableEntry {
   teacher: string;
   /** 나이스에서 가져올 때 이전과 과목이 달라졌으면 이전 과목 이름 (직접 고치면 지워짐) */
   changedFrom?: string | null;
+  /** 직접 표시한 이동수업 (교실 정보로도 자동 판단) */
+  moving?: boolean;
 }
 
 export interface Assignment {
@@ -57,6 +59,12 @@ export interface PeriodTime {
   end: string;
 }
 
+export interface DDay {
+  id: string;
+  name: string;
+  date: string; // YYYY-MM-DD
+}
+
 export interface SchoolRef {
   officeCode: string; // 나이스 시도교육청 코드
   schoolCode: string; // 나이스 학교 코드
@@ -73,6 +81,9 @@ export interface Settings {
   ttSyncWeek: string; // 나이스 시간표를 마지막으로 가져온 주의 월요일 (YYYY-MM-DD)
   ttSyncClass: string; // 그때의 학년-반 (예: '2-3')
   gradeCalc: GradeCalc; // 내신 계산기 입력값
+  homeRoom: string; // 우리 반 교실 (이동수업 판단용, 예: '2-3', '201호')
+  ddays: DDay[]; // 홈 화면 D-day 위젯
+  favoriteFoods: string[]; // 좋아하는 급식 메뉴 키워드
   periodTimes: PeriodTime[];
   notifications: boolean;
   remindDays: number; // 마감 며칠 전부터 알릴지
@@ -121,6 +132,9 @@ export function defaultSettings(): Settings {
     ttSyncWeek: '',
     ttSyncClass: '',
     gradeCalc: defaultGradeCalc(),
+    homeRoom: '',
+    ddays: [],
+    favoriteFoods: [],
     periodTimes: DEFAULT_PERIOD_TIMES.map((p) => ({ ...p })),
     notifications: false,
     remindDays: 1,

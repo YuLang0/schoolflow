@@ -48,6 +48,7 @@ export function parseBackup(text: string): AppData {
       room: str(e.room, 50),
       teacher: str(e.teacher, 50),
       changedFrom: str(e.changedFrom, 50) || null,
+      ...(e.moving === true ? { moving: true } : {}),
     }))
     .filter((e) => e.subject);
 
@@ -103,6 +104,14 @@ export function parseBackup(text: string): AppData {
     ttSyncWeek: isDateStr(s.ttSyncWeek) ? (s.ttSyncWeek as string) : '',
     ttSyncClass: str(s.ttSyncClass, 20),
     gradeCalc: sanitizeGradeCalc(s.gradeCalc),
+    homeRoom: str(s.homeRoom, 30),
+    ddays: arr(s.ddays)
+      .filter((x) => isDateStr(x.date) && str(x.name))
+      .slice(0, 20)
+      .map((x) => ({ id: id(x.id), name: str(x.name, 30), date: x.date as string })),
+    favoriteFoods: Array.isArray(s.favoriteFoods)
+      ? [...new Set((s.favoriteFoods as unknown[]).map((f) => str(f, 20).trim()).filter(Boolean))].slice(0, 30)
+      : [],
     classNo: str(s.classNo, 10),
     allergies: Array.isArray(s.allergies)
       ? [...new Set(s.allergies.filter((n): n is number => Number.isInteger(n) && n >= 1 && n <= 19))].sort((a, b) => a - b)
