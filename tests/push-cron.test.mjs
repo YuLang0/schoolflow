@@ -124,3 +124,24 @@ describe('push-cron 함수', () => {
     expect(r.status).toBe(500);
   });
 });
+
+describe('예약 시각', () => {
+  it('교시 5분 전과 아침 7:30이 모두 예약 시각에 들어감 (UTC cron)', async () => {
+    const { config } = await import('../netlify/functions/push-cron.mjs');
+    const [min, hour] = config.schedule.split(' ');
+    const mins = min.split(',').map(Number);
+    const hours = hour.split(',').flatMap((h) => (h.includes('-') ? (([a, b]) => Array.from({ length: b - a + 1 }, (_, i) => a + i))(h.split('-').map(Number)) : [Number(h)]));
+    const covered = (utcH, utcM) => hours.includes(utcH) && mins.includes(utcM);
+    const toUtc = (hhmm) => {
+      const t = (Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3)) - 9 * 60 + 1440) % 1440;
+      return [Math.floor(t / 60), t % 60];
+    };
+    for (const s of PERIOD_STARTS) {
+      const t = Number(s.slice(0, 2)) * 60 + Number(s.slice(3)) - 5;
+      const hhmm = `${String(Math.floor(t / 60)).padStart(2, '0')}:${String(t % 60).padStart(2, '0')}`;
+      expect(covered(...toUtc(hhmm))).toBe(true);
+    }
+    expect(covered(...toUtc('07:30'))).toBe(true);
+    expect(mins.length * hours.length).toBeLessThanOrEqual(24);
+  });
+});

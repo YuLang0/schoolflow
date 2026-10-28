@@ -1,4 +1,4 @@
-// 앱을 닫아도 오는 알림: 1분마다 실행되어 보낼 알림이 있을 때만 일합니다.
+// 앱을 닫아도 오는 알림: 정해진 시각에 실행되어 보낼 알림이 있을 때만 일합니다.
 // - 평일 수업 시작 5분 전: 그 교시 과목 (학교 휴업일이면 보내지 않음)
 // - 매일 07:30: 다가오는 시험, 오늘 급식의 좋아하는 메뉴
 // 필요한 Netlify 환경변수(Secret): SUPABASE_SERVICE_ROLE_KEY, VAPID_PRIVATE_KEY (+ 이미 있는 VITE_SUPABASE_URL, NEIS_API_KEY)
@@ -142,4 +142,7 @@ export default async function handler(_req, _context, deps = {}) {
   return new Response(JSON.stringify({ period, morning, users: users.length, sent }), { headers: { 'content-type': 'application/json' } });
 }
 
-export const config = { schedule: '* * * * *' };
+// Netlify 크레딧을 아끼려고 1분마다가 아니라 보낼 수 있는 시각에만 실행합니다 (하루 24번).
+// UTC 기준: 매시 5·30·45분, 0~6시와 22시 = 한국 시간 9:05·10:05·11:05·12:05(수업 5분 전),
+// 13:45·14:45·15:45(5~7교시 5분 전), 07:30(아침 알림). 맞지 않는 시각에는 바로 끝냅니다.
+export const config = { schedule: '5,30,45 0-6,22 * * *' };
