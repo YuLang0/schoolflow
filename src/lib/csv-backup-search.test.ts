@@ -52,12 +52,13 @@ describe('backup', () => {
 });
 
 describe('search', () => {
-  it('대소문자 무시, 여러 종류 검색', () => {
+  it('대소문자 무시, 여러 종류 검색 (과제는 화면이 없어져 검색하지 않음)', () => {
     const d = emptyData();
     d.assignments.push({ id: 'a', title: 'English essay', subject: '영어', due: '2026-10-30', priority: 'normal', memo: '', done: false, doneAt: null, createdAt: '' });
+    d.notices.push({ id: 'n', title: 'English camp', body: '', date: '2026-10-30', pinned: false, important: false });
     d.timetable.push({ id: 't', day: 0, period: 1, subject: '영어', room: '어학실', teacher: '' });
-    expect(search(d, 'english').map((h) => h.kind)).toEqual(['assignments']);
-    expect(search(d, '영어').map((h) => h.kind)).toEqual(['assignments', 'timetable']);
+    expect(search(d, 'english').map((h) => h.kind)).toEqual(['notices']);
+    expect(search(d, '영어').map((h) => h.kind)).toEqual(['timetable']);
     expect(search(d, '  ')).toEqual([]);
   });
 });

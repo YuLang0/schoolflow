@@ -113,7 +113,7 @@ export function AuthPage({ onSignedIn, notice }: { onSignedIn: (u: AppUser) => v
       <div className="auth-brand">
         <img src="/icon.svg" alt="" width={56} height={56} />
         <h1>SchoolFlow</h1>
-        <p>시간표 · 과제 · 시험 · 공지를 한곳에서</p>
+        <p>시간표 · 급식 · 시험 · 학사일정을 한곳에서</p>
       </div>
 
       <div className="card auth-card">

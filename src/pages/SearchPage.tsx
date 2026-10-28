@@ -16,7 +16,7 @@ export function SearchPage({ data, go }: { data: AppData; go: (f: Focus) => void
 
   return (
     <div className="stack">
-      <input className="search-input" type="search" placeholder="과제, 시험, 공지, 일정, 과목 검색" value={q} onChange={(e) => setQ(e.target.value)} autoFocus aria-label="검색어" />
+      <input className="search-input" type="search" placeholder="시험, 공지, 일정, 과목 검색" value={q} onChange={(e) => setQ(e.target.value)} autoFocus aria-label="검색어" />
       <div className="card">
         {!q.trim() ? (
           <Empty>검색어를 입력하세요.</Empty>

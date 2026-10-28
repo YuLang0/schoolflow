@@ -20,7 +20,6 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
   const move = (n: number) => setCursor(({ y, m }) => ({ y: m + n < 0 ? y - 1 : m + n > 11 ? y + 1 : y, m: (m + n + 12) % 12 }));
 
   const itemsOn = (d: string) => ({
-    a: data.assignments.filter((x) => x.due === d),
     e: data.exams.filter((x) => x.date === d),
     v: data.events.filter((x) => x.date === d),
     s: school.events?.filter((x) => x.date === d) ?? [],
@@ -67,12 +66,11 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
                 key={d}
                 className={`cal-day ${other ? 'other' : ''} ${d === today ? 'today' : ''} ${d === selected ? 'sel' : ''} ${red ? 'red' : ''} ${dow === 6 ? 'sat' : ''}`}
                 onClick={() => setSelected(d)}
-                aria-label={`${formatKoreanDate(d)} 과제 ${it.a.length}개, 시험 ${it.e.length}개, 일정 ${it.v.length}개${it.s.length ? `, 학사일정 ${it.s.map((x) => x.name).join(', ')}` : ''}`}
+                aria-label={`${formatKoreanDate(d)} 시험 ${it.e.length}개, 일정 ${it.v.length}개${it.s.length ? `, 학사일정 ${it.s.map((x) => x.name).join(', ')}` : ''}`}
               >
                 <span>{parseDateStr(d).getDate()}</span>
                 {it.s[0] && <span className={`cal-event ${it.s[0].exam ? 'exam' : ''}`}>{it.s[0].name}</span>}
                 <span className="dots">
-                  {it.a.length > 0 && <i className="dot-a" />}
                   {it.e.length > 0 && <i className="dot-e" />}
                   {it.v.length > 0 && <i className="dot-v" />}
                   {it.s.length > 0 && <i className="dot-s" />}
@@ -83,7 +81,7 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
         </div>
         {school.error && <p className="warn">학사일정을 불러오지 못했습니다: {school.error}</p>}
         <p className="legend small muted">
-          <i className="dot-a" /> 과제 마감 <i className="dot-e" /> 시험 <i className="dot-v" /> 일정 <i className="dot-s" /> 학사일정
+          <i className="dot-e" /> 시험 <i className="dot-v" /> 일정 <i className="dot-s" /> 학사일정
         </p>
       </div>
 
@@ -94,7 +92,7 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
             + 일정
           </button>
         </div>
-        {sel.a.length + sel.e.length + sel.v.length + sel.s.length === 0 ? (
+        {sel.e.length + sel.v.length + sel.s.length === 0 ? (
           <Empty>이 날은 등록된 항목이 없습니다.</Empty>
         ) : (
           <ul className="list">
@@ -122,15 +120,6 @@ export function CalendarPage({ data, api, go, initialDate }: { data: AppData; ap
                 <button className="grow link-plain" onClick={() => go({ view: 'exams', id: e.id })}>
                   {e.subject && `[${e.subject}] `}
                   {e.title} {e.time}
-                </button>
-              </li>
-            ))}
-            {sel.a.map((a) => (
-              <li key={a.id} className={a.done ? 'done' : ''}>
-                <span className="badge">과제</span>
-                <button className="grow link-plain" onClick={() => go({ view: 'assignments', id: a.id })}>
-                  {a.subject && `[${a.subject}] `}
-                  {a.title}
                 </button>
               </li>
             ))}

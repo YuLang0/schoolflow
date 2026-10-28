@@ -1,14 +1,13 @@
 import { DAY_NAMES, type AppData } from './types';
 
 export interface SearchHit {
-  kind: 'assignments' | 'exams' | 'events' | 'notices' | 'timetable';
+  kind: 'exams' | 'events' | 'notices' | 'timetable';
   id: string;
   title: string;
   detail: string;
 }
 
 export const KIND_LABEL: Record<SearchHit['kind'], string> = {
-  assignments: '과제',
   exams: '시험',
   events: '일정',
   notices: '공지',
@@ -20,9 +19,6 @@ export function search(data: AppData, query: string): SearchHit[] {
   if (!q) return [];
   const has = (...fields: string[]) => fields.some((f) => f.toLowerCase().includes(q));
   const hits: SearchHit[] = [];
-  for (const a of data.assignments)
-    if (has(a.title, a.subject, a.memo))
-      hits.push({ kind: 'assignments', id: a.id, title: a.title, detail: `${a.subject} · 마감 ${a.due}${a.done ? ' · 완료' : ''}` });
   for (const e of data.exams)
     if (has(e.title, e.subject, e.scope, e.memo))
       hits.push({ kind: 'exams', id: e.id, title: e.title, detail: `${e.subject} · ${e.date}` });

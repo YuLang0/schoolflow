@@ -24,13 +24,12 @@ describe('dueReminders', () => {
     d.settings.notifications = false;
     expect(dueReminders(d, now, new Set())).toEqual([]);
   });
-  it('마감 임박 과제·시험만, 완료한 과제는 제외', () => {
+  it('다가오는 시험만 알림 (과제는 화면이 없어져 알리지 않음)', () => {
     const r = dueReminders(data(), now, new Set());
-    expect(r.map((x) => x.title)).toEqual(['과제 마감 내일', '시험 오늘']);
+    expect(r.map((x) => x.title)).toEqual(['시험 오늘']);
   });
   it('이미 보낸 알림은 다시 보내지 않음', () => {
-    const r = dueReminders(data(), now, new Set(['a:a1:2026-10-26']));
-    expect(r.map((x) => x.key)).toEqual(['e:e1:2026-10-26']);
+    expect(dueReminders(data(), now, new Set(['e:e1:2026-10-26']))).toEqual([]);
   });
   it('수업 5분 전 알림', () => {
     const d = data();

@@ -466,3 +466,4 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 @keyframes up { from { transform: translateY(100%); } to { transform: none; } }
 @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .stats em { font-style: normal; font-size: 0.72rem; color: var(--warn); font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.stats em.plain { color: var(--muted); }

@@ -18,17 +18,6 @@ export function dueReminders(data: AppData, now: Date, sent: Set<string>): Remin
   const today = toDateStr(now);
   const out: Reminder[] = [];
 
-  for (const a of data.assignments) {
-    if (a.done) continue;
-    const n = diffDays(today, a.due);
-    if (n < 0 || n > s.remindDays) continue;
-    out.push({
-      key: `a:${a.id}:${today}`,
-      title: `과제 마감 ${whenLabel(n)}`,
-      body: `${a.subject ? `[${a.subject}] ` : ''}${a.title}`,
-    });
-  }
-
   for (const e of data.exams) {
     const n = diffDays(today, e.date);
     if (n < 0 || n > s.remindDays) continue;

@@ -6,7 +6,6 @@ import { schoolWeek } from '../lib/neis';
 import { classKeyOf, needsTimetableSync, syncTimetable } from '../lib/timetableSync';
 import { authMode } from '../lib/auth';
 import type { AppUser } from '../lib/types';
-import { AssignmentsPage } from '../pages/AssignmentsPage';
 import { CalendarPage } from '../pages/CalendarPage';
 import { DashboardPage } from '../pages/DashboardPage';
 import { ExamsPage } from '../pages/ExamsPage';
@@ -17,7 +16,7 @@ import { SettingsPage } from '../pages/SettingsPage';
 import { TimetablePage } from '../pages/TimetablePage';
 import { Banner } from './ui';
 
-export type View = 'dashboard' | 'timetable' | 'meals' | 'assignments' | 'exams' | 'calendar' | 'notices' | 'search' | 'settings';
+export type View = 'dashboard' | 'timetable' | 'meals' | 'exams' | 'calendar' | 'notices' | 'search' | 'settings';
 export interface Focus {
   view: View;
   id?: string;
@@ -28,7 +27,6 @@ const NAV: { view: View; label: string; icon: string }[] = [
   { view: 'dashboard', label: '홈', icon: '🏠' },
   { view: 'timetable', label: '시간표', icon: '🗓️' },
   { view: 'meals', label: '급식', icon: '🍚' },
-  { view: 'assignments', label: '과제', icon: '📝' },
   { view: 'exams', label: '시험', icon: '🎯' },
   { view: 'calendar', label: '달력', icon: '📅' },
   { view: 'notices', label: '공지', icon: '📢' },
@@ -38,7 +36,7 @@ const NAV: { view: View; label: string; icon: string }[] = [
 
 const VIEW_KEY = 'sf:view';
 /** 휴대폰 하단 메뉴에 바로 보이는 화면 (나머지는 더보기) */
-const TABS: View[] = ['dashboard', 'timetable', 'meals', 'assignments'];
+const TABS: View[] = ['dashboard', 'timetable', 'meals', 'calendar'];
 
 export function Shell({
   user,
@@ -133,10 +131,9 @@ export function Shell({
           <div className="splash">{api.loading ? '데이터를 불러오는 중…' : '데이터를 불러오지 못했습니다.'}</div>
         ) : (
           <>
-            {focus.view === 'dashboard' && <DashboardPage data={data} api={api} user={user} go={go} />}
+            {focus.view === 'dashboard' && <DashboardPage data={data} user={user} go={go} />}
             {focus.view === 'timetable' && <TimetablePage data={data} api={api} />}
             {focus.view === 'meals' && <MealsPage data={data} go={go} />}
-            {focus.view === 'assignments' && <AssignmentsPage data={data} api={api} focusId={focus.id} />}
             {focus.view === 'exams' && <ExamsPage data={data} api={api} focusId={focus.id} />}
             {focus.view === 'calendar' && <CalendarPage data={data} api={api} go={go} initialDate={focus.date} />}
             {focus.view === 'notices' && <NoticesPage data={data} api={api} focusId={focus.id} />}

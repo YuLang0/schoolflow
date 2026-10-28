@@ -5,8 +5,7 @@ import { useMeals } from '../hooks/useMeals';
 import { useSchool } from '../hooks/useSchool';
 import { useSchoolEvents } from '../hooks/useSchoolEvents';
 import { groupEvents } from '../lib/neis';
-import type { DataApi } from '../hooks/useAppData';
-import { addDays, ddayLabel, diffDays, formatKoreanDate, toDateStr } from '../lib/date';
+import { addDays, ddayLabel, formatKoreanDate, toDateStr } from '../lib/date';
 import { classStatus, todayClasses } from '../lib/schedule';
 import type { AppData, AppUser } from '../lib/types';
 
@@ -29,15 +28,11 @@ function statusText(data: AppData, now: Date): string {
   }
 }
 
-export function DashboardPage({ data, api, user, go }: { data: AppData; api: DataApi; user: AppUser; go: (f: Focus) => void }) {
+export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser; go: (f: Focus) => void }) {
   const now = new Date();
   const today = toDateStr(now);
   const status = classStatus(now, data.settings.periodTimes);
   const classes = todayClasses(data.timetable, now);
-  const todo = data.assignments
-    .filter((a) => !a.done)
-    .sort((a, b) => a.due.localeCompare(b.due))
-    .slice(0, 6);
   const exams = data.exams
     .filter((e) => e.date >= today)
     .sort((a, b) => a.date.localeCompare(b.date))
@@ -47,7 +42,6 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
     .filter((n) => n.pinned || n.important)
     .sort((a, b) => b.date.localeCompare(a.date))
     .slice(0, 3);
-  const doneCount = data.assignments.filter((a) => a.done).length;
   const { school } = useSchool();
   const meals = useMeals(school, today, today);
   const lunch = meals.meals?.find((m) => m.type === '중식') ?? meals.meals?.[0];
@@ -60,6 +54,8 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
     ...(exams[0] ? [{ date: exams[0].date, name: exams[0].title }] : []),
     ...(schoolExam ? [{ date: schoolExam.from, name: schoolExam.name }] : []),
   ].sort((a, b) => a.date.localeCompare(b.date))[0];
+  // 다음 학사일정 (시험 제외)
+  const nextEvent = upcoming.find((g) => !g.exam);
 
   return (
     <div className="stack">
@@ -69,10 +65,6 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
         <p>{statusText(data, now)}</p>
         <div className="stats">
           <div>
-            <strong>{data.assignments.length - doneCount}</strong>
-            <span>남은 과제</span>
-          </div>
-          <div>
             <strong>{nextExam ? ddayLabel(today, nextExam.date) : '-'}</strong>
             <span>다음 시험</span>
             {nextExam && <em title={nextExam.name}>{nextExam.name}</em>}
@@ -80,6 +72,11 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
           <div>
             <strong>{classes.length}</strong>
             <span>오늘 수업</span>
+          </div>
+          <div>
+            <strong>{nextEvent ? ddayLabel(today, nextEvent.from) : '-'}</strong>
+            <span>다음 일정</span>
+            {nextEvent && <em className="plain" title={nextEvent.name}>{nextEvent.name}</em>}
           </div>
         </div>
       </section>
@@ -106,36 +103,6 @@ export function DashboardPage({ data, api, user, go }: { data: AppData; api: Dat
                   <span className="muted small">
                     {data.settings.periodTimes[c.period - 1]?.start ?? ''} {c.room}
                   </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </section>
-
-        <section className="card">
-          <div className="card-head">
-            <h3>해야 할 과제</h3>
-            <button className="link" onClick={() => go({ view: 'assignments' })}>
-              전체 보기
-            </button>
-          </div>
-          {todo.length === 0 ? (
-            <Empty>남은 과제가 없습니다. 🎉</Empty>
-          ) : (
-            <ul className="list">
-              {todo.map((a) => (
-                <li key={a.id}>
-                  <input
-                    type="checkbox"
-                    aria-label={`${a.title} 완료`}
-                    checked={a.done}
-                    onChange={() => void api.upsert('assignments', { ...a, done: true, doneAt: toDateStr(new Date()) })}
-                  />
-                  <button className="grow link-plain" onClick={() => go({ view: 'assignments', id: a.id })}>
-                    {a.subject && <span className="muted">[{a.subject}] </span>}
-                    {a.title}
-                  </button>
-                  <span className={`dday ${diffDays(today, a.due) < 0 ? 'late' : diffDays(today, a.due) <= 1 ? 'soon' : ''}`}>{ddayLabel(today, a.due)}</span>
                 </li>
               ))}
             </ul>

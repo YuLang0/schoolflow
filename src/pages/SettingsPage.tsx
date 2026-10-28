@@ -258,11 +258,11 @@ function NotifySection({ settings, save }: { settings: Settings; save: (p: Parti
       ) : (
         <>
           <label className="check">
-            <input type="checkbox" checked={settings.notifications && perm === 'granted'} onChange={(e) => void toggle(e.target.checked)} /> 과제·시험 알림 받기
+            <input type="checkbox" checked={settings.notifications && perm === 'granted'} onChange={(e) => void toggle(e.target.checked)} /> 시험 알림 받기
           </label>
           {perm === 'denied' && <p className="warn">브라우저에서 알림이 차단되어 있습니다. 주소창 왼쪽 자물쇠 아이콘에서 알림을 허용해 주세요.</p>}
           <div className="row2">
-            <Field label="마감 며칠 전부터 알릴까요?">
+            <Field label="시험 며칠 전부터 알릴까요?">
               {(id) => (
                 <select id={id} value={settings.remindDays} onChange={(e) => save({ remindDays: Number(e.target.value) })}>
                   {[0, 1, 2, 3, 5, 7].map((n) => (
@@ -332,7 +332,7 @@ function DataSection({ data, api }: { data: AppData; api: DataApi }) {
       </div>
       <input ref={fileRef} type="file" accept="application/json,.json" hidden onChange={(e) => e.target.files?.[0] && void restore(e.target.files[0])} />
       {msg && <Banner kind={msg.kind}>{msg.text}</Banner>}
-      <p className="hint">과제·시험 CSV는 각 화면 위쪽의 CSV 버튼으로 받을 수 있습니다.</p>
+      <p className="hint">시험 CSV는 시험 화면 위쪽의 CSV 버튼으로 받을 수 있습니다.</p>
     </section>
   );
 }
