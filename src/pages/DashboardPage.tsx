@@ -83,6 +83,26 @@ export function DashboardPage({ data, user, go }: { data: AppData; user: AppUser
         </div>
       </section>
 
+      <details className="card esg-card">
+        <summary>
+          ESG 경영 <span className="muted small">환경 · 사회 · 책임 있는 운영</span>
+        </summary>
+        <dl className="esg-principles">
+          <div>
+            <dt>환경 (E)</dt>
+            <dd>시간표와 학사일정을 휴대폰에서 확인해 종이 출력물을 줄일 수 있어요.</dd>
+          </div>
+          <div>
+            <dt>사회 (S)</dt>
+            <dd>수업, 급식, 시험 정보를 한곳에 모아 학생들이 필요한 정보를 쉽게 찾을 수 있어요.</dd>
+          </div>
+          <div>
+            <dt>책임 있는 운영 (G)</dt>
+            <dd>학교 정보는 나이스 공개 자료를 사용하고, 동기화 모드에서 개인 일정은 계정별로 저장해요.</dd>
+          </div>
+        </dl>
+      </details>
+
       <div className="grid2">
         <DDayCard ddays={data.settings.ddays} go={go} />
         <section className="card">

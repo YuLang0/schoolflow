@@ -107,6 +107,14 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
 .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
 .card-head h3 { margin: 0; }
 
+.card.esg-card { padding: 0; }
+.esg-card summary { cursor: pointer; padding: 11px 16px; min-height: 44px; border-radius: inherit; font-weight: 700; }
+.esg-card summary .small { margin-left: 6px; font-weight: 400; }
+.esg-principles { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0 16px 16px; }
+.esg-principles div { padding: 10px 12px; border-radius: 10px; background: var(--card-2); }
+.esg-principles dt { font-weight: 700; }
+.esg-principles dd { margin: 4px 0 0; font-size: 0.9rem; color: var(--muted); }
+
 .seg { display: inline-flex; background: var(--card-2); border-radius: 12px; padding: 4px; gap: 2px; }
 .seg button { border: 0; background: transparent; padding: 7px 14px; border-radius: 9px; cursor: pointer; color: var(--muted); font-weight: 600; }
 .seg button.on { background: var(--card); color: var(--text); box-shadow: var(--shadow); }
@@ -372,6 +380,7 @@ input[type='checkbox'] { width: 20px; height: 20px; min-height: 0; accent-color:
   .topbar h1 { font-size: 1.25rem; }
   .stack { gap: 12px; }
   .card { padding: 14px; border-radius: 16px; }
+  .esg-principles { grid-template-columns: minmax(0, 1fr); }
   h3 { font-size: 0.98rem; }
   .toolbar { gap: 6px; }
 
